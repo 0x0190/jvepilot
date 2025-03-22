@@ -5,7 +5,6 @@ from common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip
 from opendbc.car.chrysler import chryslercan
 from opendbc.car.chrysler.long_carcontroller import LongCarController
-from opendbc.car.chrysler.interface import CarInterface
 
 LongCtrlState = car.CarControl.Actuators.LongControlState
 
@@ -38,8 +37,8 @@ GRAVITY = 9.81 # m/s^2
 AIR_DENSITY = 1.225 # kg/m3 (sea level air density of dry air @ 15° C)
 
 class LongCarControllerV1(LongCarController):
-  def __init__(self, CP, params, packer):
-    super().__init__(CP, params, packer)
+  def __init__(self, CarController, CP, params, packer):
+    super().__init__(CarController, CP, params, packer)
 
     # long
     self.accel_steady = 0
@@ -79,7 +78,7 @@ class LongCarControllerV1(LongCarController):
       # use speed to calc acceleration instead of model
       aTarget = v2aTarget
 
-    aTarget = clip(aTarget, self.params.ACCEL_MIN, CarInterface.accel_max(CS) + boost)
+    aTarget = clip(aTarget, self.params.ACCEL_MIN, self.CarController.accel_max(CS) + boost)
 
     torqMin, torqMax = self.torqRange(CS)
     long_stopping = CC.actuators.longControlState == LongCtrlState.stopping
@@ -154,7 +153,7 @@ class LongCarControllerV1(LongCarController):
     elif torque is not None:
       under_accel = aTarget - CS.out.aEgo
       if under_accel > TORQ_ADJUST_THRESHOLD:  # if not close enough
-        self.torq_adjust += under_accel * (CarInterface.accel_max(CS) / CarInterface.ACCEL_MAX)
+        self.torq_adjust += under_accel * (self.CarController.accel_max(CS) / self.CarController.ACCEL_MAX)
         under_accel_frame_count = self.under_accel_frame_count + 1  # inc under accelerating frame count
         self.torq_adjust = max(0, min(torqMax, self.torq_adjust))
 
@@ -162,8 +161,8 @@ class LongCarControllerV1(LongCarController):
     if under_accel_frame_count == 0:
       self.max_gear = None
     elif under_accel_frame_count > CAN_DOWNSHIFT_ACCEL_FRAMES:
-      if CS.out.vEgo < vTarget - COAST_WINDOW / CarInterface.accel_max(CS) \
-          and CS.out.aEgo < CarInterface.accel_max(CS) / 5 \
+      if CS.out.vEgo < vTarget - COAST_WINDOW / self.CarController.accel_max(CS) \
+          and CS.out.aEgo < self.CarController.accel_max(CS) / 5 \
           and torque > torqMax * 0.98:  # Time to downshift?
         if CS.transmission_gear > 3 and CS.gasRpm < 4500:
           self.max_gear = CS.transmission_gear - 1
@@ -236,7 +235,7 @@ class LongCarControllerV1(LongCarController):
     self.last_torque = max(torqMin + 1, min(torqMax, cruise + self.torq_adjust))
 
   def acc_brake(self, CS, aTarget, vTarget, speed_to_far_off):
-    brake_target = max(CarInterface.ACCEL_MIN, round(aTarget, 2))
+    brake_target = max(self.CarController.ACCEL_MIN, round(aTarget, 2))
     if self.last_brake is None:
       self.last_brake = min(0., brake_target / 2)
     elif self.last_brake < -.2 and CS.out.aEgo < brake_target:  # are we slowing too much?

@@ -7,7 +7,8 @@ from opendbc.car.interfaces import FORWARD_GEARS
 ButtonType = car.CarState.ButtonEvent.Type
 
 class LongCarController:
-  def __init__(self, CP, params, packer):
+  def __init__(self, CarController, CP, params, packer):
+    self.CarController = CarController
     self.CP = CP
     self.params = params
     self.packer = packer

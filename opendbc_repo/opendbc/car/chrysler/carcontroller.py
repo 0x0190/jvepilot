@@ -22,6 +22,11 @@ V_CRUISE_MIN_MS = V_CRUISE_MIN * CV.KPH_TO_MS
 AUTO_FOLLOW_LOCK_MS = 3 * CV.MPH_TO_MS
 EXTEND_FUTURE_MAX = 10 * CV.MPH_TO_MS
 
+ACCEL_MAX = 2.  # m/s2, high to not limit stock ACC
+ACCEL_MIN = -3.5  # m/s2
+
+cachedParams = CachedParams()
+
 class CarController(CarControllerBase):
   def __init__(self, dbc_names, CP):
     super().__init__(dbc_names, CP)
@@ -50,7 +55,7 @@ class CarController(CarControllerBase):
     self.low_steer = not self.CP.flags & ChryslerFlags.HIGHER_MIN_STEERING_SPEED
     self.steer_gap = 0.5 if self.CP.carFingerprint in RAM_CARS else 3.0
 
-    self.long_controller = LongCarControllerV1(self.CP, self.params, self.packer)
+    self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
 
   def update(self, CC, CS, now_nanos):
     can_sends = []
@@ -246,3 +251,20 @@ class CarController(CarControllerBase):
 
     return self.last_target
 
+  @staticmethod
+  def get_pid_accel_limits(CS, CP, current_speed, cruise_speed):
+    return ACCEL_MIN, CarController.accel_max(CS)
+
+  @staticmethod
+  def accel_max(CS):
+    maxAccel = ACCEL_MAX
+    if CS.longControl:
+      eco = CS.out.jvePilotCarState.accEco
+      if eco == 1:
+        maxAccel = cachedParams.get_float('jvePilot.settings.accEco.longAccelLevel1', 1000)
+      elif eco == 2:
+        maxAccel = cachedParams.get_float('jvePilot.settings.accEco.longAccelLevel2', 1000)
+      else:
+        maxAccel = 2
+
+    return maxAccel
