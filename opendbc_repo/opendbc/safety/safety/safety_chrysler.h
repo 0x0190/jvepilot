@@ -262,16 +262,16 @@ static safety_config chrysler_init(uint16_t param) {
     {.msg = {{514, 0, 8, .ignore_checksum = true, .ignore_counter = true, .frequency = 100U}, { 0 }, { 0 }}},
     {.msg = {{CHRYSLER_ADDRS.ECM_5, 0, 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
     {.msg = {{CHRYSLER_ADDRS.DAS_3, 0, 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_ADDRS.GEAR, 0, 8, .check_checksum = true, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.GEAR, 0, 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
   };
 
   static const CanMsg CHRYSLER_TX_MSGS[] = {
     {CHRYSLER_ADDRS.CRUISE_BUTTONS, 0, 3, false},
     {CHRYSLER_ADDRS.LKAS_COMMAND, 0, 6, true},
     {CHRYSLER_ADDRS.DAS_6, 0, 8, false},
-    {CHRYSLER_ADDRS.DAS_3, 0, 8},
-    {CHRYSLER_ADDRS.DAS_5, 0, 8},
-    {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5},
+    {CHRYSLER_ADDRS.DAS_3, 0, 8, false},
+    {CHRYSLER_ADDRS.DAS_5, 0, 8, false},
+    {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5, false},
   };
 
   static const CanMsg CHRYSLER_RAM_DT_TX_MSGS[] = {
