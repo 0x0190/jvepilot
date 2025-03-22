@@ -4,27 +4,32 @@ import numpy as np
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
 
+from openpilot.common.params import Params
+
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
 # V_CRUISE's are in kph
-V_CRUISE_MIN = 8
+V_CRUISE_MIN = 30
+V_CRUISE_MIN_IMPERIAL = int(20 * CV.MPH_TO_KPH)
 V_CRUISE_MAX = 145
 V_CRUISE_UNSET = 255
 V_CRUISE_INITIAL = 40
 V_CRUISE_INITIAL_EXPERIMENTAL_MODE = 105
+V_CRUISE_DELTA = 5  # ACC increments (unit agnostic)
 IMPERIAL_INCREMENT = round(CV.MPH_TO_KPH, 1)  # round here to avoid rounding errors incrementing set speed
 
 ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
+CRUISE_LONGER_PRESS = 40
 CRUISE_NEAREST_FUNC = {
   ButtonType.accelCruise: math.ceil,
   ButtonType.decelCruise: math.floor,
 }
 CRUISE_INTERVAL_SIGN = {
-  ButtonType.accelCruise: +1,
-  ButtonType.decelCruise: -1,
+  ButtonType.accelCruise: +0.99,
+  ButtonType.decelCruise: -0.99,
 }
 
 
@@ -36,6 +41,7 @@ class VCruiseHelper:
     self.v_cruise_kph_last = 0
     self.button_timers = {ButtonType.decelCruise: 0, ButtonType.accelCruise: 0}
     self.button_change_states = {btn: {"standstill": False, "enabled": False} for btn in self.button_timers}
+    self.reverse_acc_button_change = Params().get_bool("jvePilot.settings.reverseAccSpeedChange")
 
   @property
   def v_cruise_initialized(self):
@@ -45,7 +51,7 @@ class VCruiseHelper:
     self.v_cruise_kph_last = self.v_cruise_kph
 
     if CS.cruiseState.available:
-      if not self.CP.pcmCruise:
+      if not self.CP.pcmCruise or not self.CP.pcmCruiseSpeed: # jvePilot's hybrid mode
         # if stock cruise is completely disabled, then we can use our own set speed logic
         self._update_v_cruise_non_pcm(CS, enabled, is_metric)
         self.v_cruise_cluster_kph = self.v_cruise_kph
@@ -74,18 +80,30 @@ class VCruiseHelper:
 
     v_cruise_delta = 1. if is_metric else IMPERIAL_INCREMENT
 
-    for b in CS.buttonEvents:
-      if b.type.raw in self.button_timers and not b.pressed:
-        if self.button_timers[b.type.raw] > CRUISE_LONG_PRESS:
-          return  # end long press
+    # use jvePilot's pressedFrames
+    events = [e for e in CS.buttonEvents if e.pressedFrames > 0 and e.type.raw in self.button_timers]
+    for b in events:
+      long_press = b.pressedFrames >= CRUISE_LONG_PRESS
+      if long_press:
+        if (b.pressedFrames - CRUISE_LONG_PRESS) % CRUISE_LONGER_PRESS == 0:  # repeat the long press?
+          button_type = b.type.raw
+          break
+      elif not b.pressed:  # it was a short press
         button_type = b.type.raw
         break
-    else:
-      for k, timer in self.button_timers.items():
-        if timer and timer % CRUISE_LONG_PRESS == 0:
-          button_type = k
-          long_press = True
-          break
+
+  # for b in CS.buttonEvents:
+    #   if b.type.raw in self.button_timers and not b.pressed:
+    #     if self.button_timers[b.type.raw] > CRUISE_LONG_PRESS:
+    #       return  # end long press
+    #     button_type = b.type.raw
+    #     break
+    # else:
+    #   for k, timer in self.button_timers.items():
+    #     if timer and timer % CRUISE_LONG_PRESS == 0:
+    #       button_type = k
+    #       long_press = True
+    #       break
 
     if button_type is None:
       return
@@ -99,17 +117,17 @@ class VCruiseHelper:
     if not self.button_change_states[button_type]["enabled"]:
       return
 
-    v_cruise_delta = v_cruise_delta * (5 if long_press else 1)
-    if long_press and self.v_cruise_kph % v_cruise_delta != 0:  # partial interval
-      self.v_cruise_kph = CRUISE_NEAREST_FUNC[button_type](self.v_cruise_kph / v_cruise_delta) * v_cruise_delta
-    else:
-      self.v_cruise_kph += v_cruise_delta * CRUISE_INTERVAL_SIGN[button_type]
+    button_press_delta = 5 if long_press != self.reverse_acc_button_change else 1
+    v_cruise_delta = v_cruise_delta * button_press_delta
+    self.v_cruise_kph += v_cruise_delta * CRUISE_INTERVAL_SIGN[button_type]
+    self.v_cruise_kph = CRUISE_NEAREST_FUNC[button_type](self.v_cruise_kph / v_cruise_delta) * v_cruise_delta
 
     # If set is pressed while overriding, clip cruise speed to minimum of vEgo
     if CS.gasPressed and button_type in (ButtonType.decelCruise, ButtonType.setCruise):
       self.v_cruise_kph = max(self.v_cruise_kph, CS.vEgo * CV.MS_TO_KPH)
 
-    self.v_cruise_kph = np.clip(round(self.v_cruise_kph, 1), V_CRUISE_MIN, V_CRUISE_MAX)
+    v_cruise_min = V_CRUISE_MIN if is_metric else V_CRUISE_MIN_IMPERIAL
+    self.v_cruise_kph = np.clip(round(self.v_cruise_kph, 1), v_cruise_min, V_CRUISE_MAX)
 
   def update_button_timers(self, CS, enabled):
     # increment timer for buttons still pressed
@@ -118,19 +136,20 @@ class VCruiseHelper:
         self.button_timers[k] += 1
 
     for b in CS.buttonEvents:
-      if b.type.raw in self.button_timers:
+      if b.pressedChanged and b.type.raw in self.button_timers:
         # Start/end timer and store current state on change of button pressed
         self.button_timers[b.type.raw] = 1 if b.pressed else 0
         self.button_change_states[b.type.raw] = {"standstill": CS.cruiseState.standstill, "enabled": enabled}
 
-  def initialize_v_cruise(self, CS, experimental_mode: bool) -> None:
+  def initialize_v_cruise(self, CS, experimental_mode: bool, is_metric) -> None:
     # initializing is handled by the PCM
-    if self.CP.pcmCruise:
+    if self.CP.pcmCruise and self.CP.pcmCruiseSpeed:
       return
 
-    initial = V_CRUISE_INITIAL_EXPERIMENTAL_MODE if experimental_mode else V_CRUISE_INITIAL
+    # initial = V_CRUISE_INITIAL_EXPERIMENTAL_MODE if experimental_mode else V_CRUISE_INITIAL
+    initial = V_CRUISE_MIN if is_metric else V_CRUISE_MIN_IMPERIAL
 
-    if any(b.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for b in CS.buttonEvents) and self.v_cruise_initialized:
+    if any(b.pressed and b.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for b in CS.buttonEvents) and self.v_cruise_initialized:
       self.v_cruise_kph = self.v_cruise_kph_last
     else:
       self.v_cruise_kph = int(round(np.clip(CS.vEgo * CV.MS_TO_KPH, initial, V_CRUISE_MAX)))

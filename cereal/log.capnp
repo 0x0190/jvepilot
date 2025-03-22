@@ -127,7 +127,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     personalityChanged @91;
     aeb @92;
 
-    soundsUnavailableDEPRECATED @47;
+    lkasUserDisabled @47; # repurposed for jvePilot
   }
 }
 
@@ -847,6 +847,12 @@ struct SelfdriveState {
     mid @2;
     full @3;
   }
+
+  struct JvePilotSelfdriveState {
+    aolcAvailable @0 :Bool;
+  }
+
+  jvePilotSelfdriveState @13 :JvePilotSelfdriveState;  # jvePilot
 }
 
 struct ControlsState @0x97ff69c53601abf1 {

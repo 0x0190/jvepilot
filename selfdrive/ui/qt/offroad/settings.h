@@ -57,6 +57,17 @@ private:
   ButtonControl *pair_device;
 };
 
+class JvePilotTogglesPanel : public ListWidget {
+  Q_OBJECT
+
+public:
+  explicit JvePilotTogglesPanel(QWidget *parent = nullptr);
+
+private:
+  Params params;
+  ButtonControl *targetCarBtn;
+};
+
 class TogglesPanel : public ListWidget {
   Q_OBJECT
 public:
