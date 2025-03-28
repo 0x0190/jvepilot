@@ -21,7 +21,8 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 
   auto_follow_btn = new AutoFollowButton(this);
-  main_layout->addWidget(auto_follow_btn, 0, Qt::AlignVCenter | Qt::AlignRight);
+  auto_follow_btn->setContentsMargins(0, 40, 0, 0);
+  main_layout->addWidget(auto_follow_btn, 0, Qt::AlignTop | Qt::AlignRight);
 
   eco_btn = new EcoButton(this);
   main_layout->addWidget(eco_btn, 0, Qt::AlignBottom | Qt::AlignRight);

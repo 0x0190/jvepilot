@@ -199,7 +199,7 @@ class CarController(CarControllerBase):
 
     if len(self.sm['longitudinalPlan'].speeds):
       extendFuture = clip(min(self.sm['longitudinalPlan'].accels) * 2, -EXTEND_FUTURE_MAX, EXTEND_FUTURE_MAX)
-      targetFuture = self.sm['longitudinalPlan'].speeds[-1] + extendFuture
+      targetFuture = max(self.sm['longitudinalPlan'].speeds) + extendFuture + CV.KPH_TO_MS / 2
     else:
       targetFuture = 0
 

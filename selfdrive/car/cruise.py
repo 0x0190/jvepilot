@@ -24,12 +24,12 @@ ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
 CRUISE_LONGER_PRESS = 40
 CRUISE_NEAREST_FUNC = {
-  ButtonType.accelCruise: math.ceil,
-  ButtonType.decelCruise: math.floor,
+  ButtonType.accelCruise: math.floor,
+  ButtonType.decelCruise: math.ceil,
 }
 CRUISE_INTERVAL_SIGN = {
-  ButtonType.accelCruise: +0.99,
-  ButtonType.decelCruise: -0.99,
+  ButtonType.accelCruise: +1.01,
+  ButtonType.decelCruise: -1.01,
 }
 
 
