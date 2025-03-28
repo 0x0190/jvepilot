@@ -22,12 +22,12 @@ V_CRUISE_MIN_MS = V_CRUISE_MIN * CV.KPH_TO_MS
 AUTO_FOLLOW_LOCK_MS = 3 * CV.MPH_TO_MS
 EXTEND_FUTURE_MAX = 10 * CV.MPH_TO_MS
 
-ACCEL_MAX = 2.  # m/s2, high to not limit stock ACC
-ACCEL_MIN = -3.5  # m/s2
-
 cachedParams = CachedParams()
 
 class CarController(CarControllerBase):
+  ACCEL_MAX = 2.  # m/s2, high to not limit stock ACC
+  ACCEL_MIN = -3.5  # m/s2
+
   def __init__(self, dbc_names, CP):
     super().__init__(dbc_names, CP)
     self.apply_torque_last = 0
@@ -253,11 +253,11 @@ class CarController(CarControllerBase):
 
   @staticmethod
   def get_pid_accel_limits(CS, CP, current_speed, cruise_speed):
-    return ACCEL_MIN, CarController.accel_max(CS)
+    return CarController.ACCEL_MIN, CarController.accel_max(CS)
 
   @staticmethod
   def accel_max(CS):
-    maxAccel = ACCEL_MAX
+    maxAccel = CarController.ACCEL_MAX
     if CS.longControl:
       eco = CS.out.jvePilotCarState.accEco
       if eco == 1:
