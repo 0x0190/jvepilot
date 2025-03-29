@@ -63,6 +63,7 @@ class CarState(CarStateBase):
     self.wheelTorqMax = None
     self.transmission_gear = None
     self.engine_torque = None
+    self.cruise_enabled = False
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -154,6 +155,7 @@ class CarState(CarStateBase):
     self.das_3 = cp.vl['DAS_3']
     self.das_5 = cp.vl['DAS_5']
     self.lkasHeartbit = cp_cam.vl["LKAS_HEARTBIT"]
+    self.cruise_enabled = ret.cruiseState.enabled
 
     if self.CP.carFingerprint in RAM_CARS:
       # Auto High Beam isn't Located in this message on chrysler or jeep currently located in 729 message
@@ -199,16 +201,18 @@ class CarState(CarStateBase):
   def check_button(self, button_events, button_type, pressed):
     pressed_frames = 0
     pressed_changed = False
+    cruise_enabled_when_pressed = self.cruise_enabled
     for ob in self.out.buttonEvents:
       if ob.type == button_type:
         pressed_frames = ob.pressedFrames
         pressed_changed = ob.pressed != pressed
+        cruise_enabled_when_pressed = ob.cruiseEnabledWhenPressed
         break
 
     if pressed or pressed_changed:
       if not pressed_changed:
         pressed_frames += 1
-      button_events.append(car.CarState.ButtonEvent(pressed=pressed, type=button_type, pressedFrames=pressed_frames, pressedChanged=pressed_changed))
+      button_events.append(car.CarState.ButtonEvent(pressed=pressed, type=button_type, pressedFrames=pressed_frames, cruiseEnabledWhenPressed=cruise_enabled_when_pressed))
 
   @staticmethod
   def get_cruise_messages():

@@ -272,7 +272,7 @@ struct CarState {
     pressed @0 :Bool;
     type @1 :Type;
     pressedFrames @2: UInt32;
-    pressedChanged @3: Bool;
+    cruiseEnabledWhenPressed @3: Bool;
 
     enum Type {
       unknown @0;

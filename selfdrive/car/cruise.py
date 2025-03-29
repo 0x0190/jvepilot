@@ -89,7 +89,8 @@ class VCruiseHelper:
           button_type = b.type.raw
           break
       elif not b.pressed:  # it was a short press
-        button_type = b.type.raw
+        if b.cruiseEnabledWhenPressed:
+          button_type = b.type.raw
         break
 
   # for b in CS.buttonEvents:
@@ -136,7 +137,7 @@ class VCruiseHelper:
         self.button_timers[k] += 1
 
     for b in CS.buttonEvents:
-      if b.pressedChanged and b.type.raw in self.button_timers:
+      if b.type.raw in self.button_timers:
         # Start/end timer and store current state on change of button pressed
         self.button_timers[b.type.raw] = 1 if b.pressed else 0
         self.button_change_states[b.type.raw] = {"standstill": CS.cruiseState.standstill, "enabled": enabled}
