@@ -52,7 +52,6 @@ public:
 
 private:
   void paintEvent(QPaintEvent *event) override;
-  void changeMode();
 
   Params params;
   QPixmap imgs[2];

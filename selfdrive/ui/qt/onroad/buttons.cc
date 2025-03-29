@@ -94,14 +94,6 @@ AutoFollowButton::AutoFollowButton(QWidget *parent) : auto_follow(false), long_c
 
   long_control_imgs[0] = loadPixmap("../assets/jvepilot/driving_brain_off.png", {img_size, img_size});
   long_control_imgs[1] = loadPixmap("../assets/jvepilot/driving_brain_on.png", {img_size, img_size});
-
-  QObject::connect(this, &QPushButton::clicked, this, &AutoFollowButton::changeMode);
-}
-
-void AutoFollowButton::changeMode() {
-  if (!long_control) {
-    params.putBool("jvePilot.settings.autoFollow", !auto_follow);
-  }
 }
 
 void AutoFollowButton::updateState(const UIState &s) {
@@ -122,11 +114,7 @@ void AutoFollowButton::updateState(const UIState &s) {
 
 void AutoFollowButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
-  if (long_control) {
-    QPixmap img = long_control_imgs[cruise_enabled ? 1 : 0];
-    drawImage(p, QPoint(btn_size / 2, btn_size / 2), img, 1.0);
-  } else {
-    QPixmap img = imgs[auto_follow ? 1 : 0];
-    drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(0, 0, 0, 166), isDown() ? 0.6 : 1.0, btn_size);
-  }
+  QPixmap img = long_control ? long_control_imgs[cruise_enabled ? 1 : 0]; : mgs[auto_follow ? 1 : 0];
+
+  drawImage(p, QPoint(btn_size / 2, btn_size / 2), img, 1.0);
 }
