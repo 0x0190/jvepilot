@@ -114,7 +114,7 @@ void AutoFollowButton::updateState(const UIState &s) {
 
 void AutoFollowButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
-  QPixmap img = long_control ? long_control_imgs[cruise_enabled ? 1 : 0]; : mgs[auto_follow ? 1 : 0];
+  QPixmap img = long_control ? long_control_imgs[cruise_enabled ? 1 : 0] : mgs[auto_follow ? 1 : 0];
 
   drawImage(p, QPoint(btn_size / 2, btn_size / 2), img, 1.0);
 }
