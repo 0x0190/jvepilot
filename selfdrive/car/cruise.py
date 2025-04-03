@@ -150,7 +150,7 @@ class VCruiseHelper:
     # initial = V_CRUISE_INITIAL_EXPERIMENTAL_MODE if experimental_mode else V_CRUISE_INITIAL
     initial = V_CRUISE_MIN if is_metric else V_CRUISE_MIN_IMPERIAL
 
-    if any(b.pressed and b.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for b in CS.buttonEvents) and self.v_cruise_initialized:
+    if any(b.pressed and b.type == ButtonType.resumeCruise for b in CS.buttonEvents) and self.v_cruise_initialized:
       self.v_cruise_kph = self.v_cruise_kph_last
     else:
       self.v_cruise_kph = int(round(np.clip(CS.vEgo * CV.MS_TO_KPH, initial, V_CRUISE_MAX)))
