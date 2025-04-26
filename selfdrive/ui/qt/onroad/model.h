@@ -20,6 +20,8 @@ private:
   void update_model(const cereal::ModelDataV2::Reader &model, const cereal::RadarState::LeadData::Reader &lead);
   void drawLaneLines(QPainter &painter);
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height);
+  void drawBlindspotPoly(QPainter &painter, const cereal::XYZTData::Reader &line, bool flipGradient, float max_distance);
+  void drawBlindspotLines(QPainter &painter, const cereal::ModelDataV2::Reader &model);
   void updatePathGradient(QLinearGradient &bg);
   QColor blendColors(const QColor &start, const QColor &end, float t);
 
