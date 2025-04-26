@@ -35,6 +35,7 @@ Come join us on [Discord](https://discord.gg/r8yaDBdnwH)!
   * [Benefits of jvePilot](#benefits-of-jvepilot)
     + [Longitudinal control](#longitudinal-control)
     + [Always On Lateral Control](#always-on-lateral-control)
+    + [Blindspot Lane Highlight](#blindspot-lane-highlight)
     + [ACC Ready on Start](#acc-ready-on-start)
     + [Auto Follow](#auto-follow)
     + [ACC Eco](#acc-eco)
@@ -90,6 +91,9 @@ It is limited as ACC only goes down to 20 mph, so it doesn't help as low speeds.
 Always On Lateral Control, or AOLC, is a feature that allows jvePilot to steer even if ACC isn't actively engaged.
 Enabling this feature will allow a driver to take control of gas/brakes while still retaining the automatic steering provided by jvePilot.
 Because the low torque applied to the steering, it's very easy to override the steering if needed.
+
+### Blindspot Lane Highlight
+Provides a visual cue when vehicles are in your blindspot by turning the lane line red on that side.
 
 ### ACC Ready on Start
 When enabled, jvePilot will enable ACC on start.
