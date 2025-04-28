@@ -13,26 +13,30 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
   return max_idx;
 }
 
-void ModelRenderer::drawBlindspotPoly(QPainter &painter, const cereal::XYZTData::Reader &line, bool flipGradient, float max_distance) {
-  QPointF left, right;
+void ModelRenderer::drawBlindspotPoly(QPainter &painter, const cereal::XYZTData::Reader &line, float max_distance) {
+  QPointF point, middle;
   QPolygonF poly;
+  bool hasMiddle;
   int max_idx = get_path_length_idx(line, max_distance);
 
   for (int i = 0; i <= max_idx; ++i) {
-    if (mapToScreen(line.getX()[i], line.getY()[i] - 0.2, line.getZ()[i], &left))
-      poly.push_back(left);
+    if (mapToScreen(line.getX()[i], line.getY()[i] - 0.2, line.getZ()[i], &point))
+      poly.push_back(point);
+      middle = point;
+      hasMiddle = true;
   }
   for (int i = max_idx; i >= 0; --i) {
-    if (mapToScreen(line.getX()[i], line.getY()[i] + 0.2, line.getZ()[i], &right))
-      poly.push_back(right);
+    if (mapToScreen(line.getX()[i], line.getY()[i] + 0.2, line.getZ()[i], &point))
+      poly.push_back(point);
   }
 
-  if (poly.size() > 3) {
-    QLinearGradient grad(flipGradient ? poly.first() : poly.last(),
-                         flipGradient ? poly.last() : poly.first());
+  if (hasMiddle && poly.size() > 3) {
+    QLinearGradient grad(poly.first(), middle);
 
     grad.setColorAt(0.0, QColor(255, 0, 0, 100));
-    grad.setColorAt(1.0, QColor(255, 0, 0, 0));
+    grad.setColorAt(0.4, QColor(255, 0, 0, 100));
+    grad.setColorAt(0.7, QColor(255, 96, 0, 100));
+    grad.setColorAt(1.0, QColor(255, 128, 0, 0));
     painter.setBrush(QBrush(grad));
     painter.setPen(Qt::NoPen);
     painter.drawPolygon(poly);
@@ -53,12 +57,12 @@ void ModelRenderer::drawBlindspotLines(QPainter &painter, const cereal::ModelDat
     max_distance = std::clamp(lead_d - std::min(lead_d * 0.35f, 10.0f), 0.0f, MAX_DRAW_DISTANCE);
   }
 
-  if (s->scene.left_blindspot && lane_lines.size() > 1) {
-    drawBlindspotPoly(painter, lane_lines[1], false, max_distance);
+  if (true && lane_lines.size() > 1) {
+    drawBlindspotPoly(painter, lane_lines[1], max_distance);
   }
 
-  if (s->scene.right_blindspot && lane_lines.size() > 2) {
-    drawBlindspotPoly(painter, lane_lines[2], true, max_distance);
+  if (true && lane_lines.size() > 2) {
+    drawBlindspotPoly(painter, lane_lines[2], max_distance);
   }
 }
 
