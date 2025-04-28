@@ -57,11 +57,11 @@ void ModelRenderer::drawBlindspotLines(QPainter &painter, const cereal::ModelDat
     max_distance = std::clamp(lead_d - std::min(lead_d * 0.35f, 10.0f), 0.0f, MAX_DRAW_DISTANCE);
   }
 
-  if (true && lane_lines.size() > 1) {
+  if (s->scene.left_blindspot && lane_lines.size() > 1) {
     drawBlindspotPoly(painter, lane_lines[1], max_distance);
   }
 
-  if (true && lane_lines.size() > 2) {
+  if (s->scene.right_blindspot && lane_lines.size() > 2) {
     drawBlindspotPoly(painter, lane_lines[2], max_distance);
   }
 }
