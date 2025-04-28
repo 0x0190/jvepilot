@@ -14,24 +14,28 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
 }
 
 void ModelRenderer::drawBlindspotPoly(QPainter &painter, const cereal::XYZTData::Reader &line, float max_distance) {
-  QPointF point, middle;
+  QPointF point, top;
   QPolygonF poly;
-  bool hasMiddle;
+  bool hasTop;
   int max_idx = get_path_length_idx(line, max_distance);
 
   for (int i = 0; i <= max_idx; ++i) {
-    if (mapToScreen(line.getX()[i], line.getY()[i] - 0.2, line.getZ()[i], &point))
+    if (mapToScreen(line.getX()[i], line.getY()[i] - 0.2, line.getZ()[i], &point)) {
       poly.push_back(point);
-      middle = point;
-      hasMiddle = true;
+    }
+  }
+  if (poly.size() > 0) {
+    top = poly.last();
+    hasTop = true;
   }
   for (int i = max_idx; i >= 0; --i) {
-    if (mapToScreen(line.getX()[i], line.getY()[i] + 0.2, line.getZ()[i], &point))
+    if (mapToScreen(line.getX()[i], line.getY()[i] + 0.2, line.getZ()[i], &point)) {
       poly.push_back(point);
+    }
   }
 
-  if (hasMiddle && poly.size() > 3) {
-    QLinearGradient grad(poly.first(), middle);
+  if (hasTop && poly.size() > 3) {
+    QLinearGradient grad(poly.first(), top);
 
     grad.setColorAt(0.0, QColor(255, 0, 0, 100));
     grad.setColorAt(0.8, QColor(255, 0, 0, 100));
