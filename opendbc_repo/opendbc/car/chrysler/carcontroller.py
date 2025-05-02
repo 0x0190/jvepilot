@@ -198,7 +198,7 @@ class CarController(CarControllerBase):
       eco_limit = self.cachedParams.get_float('jvePilot.settings.accEco.speedAheadLevel2', 1000)
 
     if len(self.sm['longitudinalPlan'].speeds):
-      extendFuture = clip(mean(self.sm['longitudinalPlan'].accels) * 3, -EXTEND_FUTURE_MAX, EXTEND_FUTURE_MAX)
+      extendFuture = clip(mean(self.sm['longitudinalPlan'].accels) * 4, -EXTEND_FUTURE_MAX, EXTEND_FUTURE_MAX)
       targetFuture = mean(self.sm['longitudinalPlan'].speeds) + extendFuture + CV.KPH_TO_MS / 2
     else:
       targetFuture = 0
