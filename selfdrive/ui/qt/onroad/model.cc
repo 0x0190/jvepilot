@@ -37,7 +37,9 @@ void ModelRenderer::drawBlindspotPoly(QPainter &painter, const cereal::XYZTData:
   if (hasTop && poly.size() > 3) {
     QLinearGradient grad(poly.first(), top);
 
-    grad.setColorAt(0.0, QColor(255, 0, 0, 100));
+    grad.setColorAt(0.0, QColor(255, 0, 0, 200));
+    grad.setColorAt(0.2, QColor(255, 0, 0, 200));
+    grad.setColorAt(0.4, QColor(255, 0, 0, 100));
     grad.setColorAt(0.8, QColor(255, 0, 0, 100));
     grad.setColorAt(1.0, QColor(255, 0, 0, 0));
     painter.setBrush(QBrush(grad));
