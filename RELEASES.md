@@ -4,6 +4,7 @@ Version jvePilot-0.9.8(v3.17)
 * Fix beeping on ignition off
 * Change how ACC speed is calculated from the model
 * Improve reliability of ACC auto enable
+* Blindspot lane highlighting. Thanks @mikejakes!
 * Version 0.9.8 (2025-02-28)
   * New driving model
     * Model now gates applying positive acceleration in Chill mode
