@@ -64,6 +64,9 @@ class CarState(CarStateBase):
     self.transmission_gear = None
     self.engine_torque = None
     self.cruise_enabled = False
+    self.brake_hold = False
+    self.acc_accelerating = False
+    self.acc_decelerating = False
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -151,8 +154,14 @@ class CarState(CarStateBase):
       ret.cruiseState.nonAdaptive = cp_cruise.vl["DAS_4"]["ACC_STATE"] in (1, 2)  # 1 NormalCCOn and 2 NormalCCSet
       ret.cruiseState.standstill = cp_cruise.vl["DAS_3"]["ACC_STANDSTILL"] == 1
       ret.accFaulted = cp_cruise.vl["DAS_3"]["ACC_FAULTED"] != 0
+      if not ret.cruiseState.enabled and ret.standstill and self.brake_hold:
+        ret.cruiseState.enabled = ret.cruiseState.available # stay enabled
+        ret.cruiseState.standstill = True # we want to resume
 
     self.das_3 = cp.vl['DAS_3']
+    self.acc_accelerating = self.das_3["ACC_GO"] == 1 or self.das_3["ENGINE_TORQUE_REQUEST_MAX"] == 1
+    self.acc_decelerating = self.das_3["ACC_DECEL_REQ"] == 1
+
     self.das_5 = cp.vl['DAS_5']
     self.lkasHeartbit = cp_cam.vl["LKAS_HEARTBIT"]
     self.cruise_enabled = ret.cruiseState.enabled

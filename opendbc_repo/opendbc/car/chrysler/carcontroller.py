@@ -47,6 +47,7 @@ class CarController(CarControllerBase):
     self.round_to_unit = CV.MS_TO_KPH if self.settingsParams.get_bool("IsMetric") else CV.MS_TO_MPH
     self.steerNoMinimum = CP.minSteerSpeed < 0
     self.auto_enable_acc = self.settingsParams.get_bool("jvePilot.settings.autoEnableAcc")
+    self.last_das_3_counter = -1
 
     self.autoFollowDistanceLock = None
     self.button_frame = 0
@@ -146,6 +147,7 @@ class CarController(CarControllerBase):
         self.last_personality = personality
         self.settingsParams.put_nonblocking('LongitudinalPersonality', str(personality))
 
+    self.brake_hold(CS, CC, can_sends)
     self.long_controller.acc(self.sm['longitudinalPlan'], self.frame, CC, CS, can_sends)
 
     self.frame += 1
@@ -155,6 +157,31 @@ class CarController(CarControllerBase):
     new_actuators.torqueOutputCan = self.apply_torque_last
 
     return new_actuators, can_sends
+
+  def brake_hold(self, CS, CC, can_sends):
+    counter_das_3_changed = CS.das_3['COUNTER'] != self.last_das_3_counter
+    self.last_das_3_counter = CS.das_3['COUNTER']
+
+    if not CC.enabled or CS.longControl \
+      or CS.acc_accelerating or not CS.out.standstill \
+      or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel) or CS.out.brakePressed:
+      CS.brake_hold = False
+      return
+
+    if not CS.brake_hold and CS.out.cruiseState.enabled:
+      CS.brake_hold = CS.out.cruiseState.standstill and CS.out.standstill
+
+    if CS.brake_hold:
+      can_sends.append(chryslercan.das_3_command(self.packer,
+                                                 2 if counter_das_3_changed else 3,
+                                                 False,
+                                                 False,
+                                                 None,
+                                                 None,
+                                                 True,
+                                                 -2.0,
+                                                 False,
+                                                 CS.das_3))
 
   def wheel_button_control(self, CC, CS, can_sends, enabled, das_bus, cancel, resume):
     button_counter = CS.button_counter
@@ -168,13 +195,16 @@ class CarController(CarControllerBase):
       buttons_to_press = []
       if cancel:
         buttons_to_press = ['ACC_Cancel']
+        CS.brake_hold = False
+      elif CS.brake_hold and CS.acc_decelerating: # We want to take control of ACC brakes
+        buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]
           if button_counter_offset is not None:
-            if resume:
+            if resume or (CS.brake_hold and CS.out.gasPressed):
               buttons_to_press = ["ACC_Resume"]
-            elif CS.out.cruiseState.enabled:  # Control ACC
+            elif not CS.brake_hold and CS.out.cruiseState.enabled:  # Control ACC
               buttons_to_press = [self.auto_follow_button(CC, CS), self.hybrid_acc_button(CC, CS)]
 
       # ACC Auto enable
