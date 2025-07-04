@@ -137,14 +137,14 @@ class CarState(CarStateBase):
       ret.cruiseState.nonAdaptive = False
       ret.cruiseState.standstill = False
       ret.accFaulted = False
-      self.torqMin = cp.vl["DAS_3"]["ENGINE_TORQUE_REQUEST"]
-      self.torqMax = cp.vl["ECM_TRQ"]["ENGINE_TORQ_MAX"]
-      self.transmission_gear = int(cp.vl['TCM_A7']["CurrentGear"])
-      self.gasRpm = cp.vl["ECM_1"]["ENGINE_RPM"]
-      self.engine_torque = cp.vl["ECM_1"]["ENGINE_TORQUE"]
+      self.torqMin = cp_cruise.vl["DAS_3"]["ENGINE_TORQUE_REQUEST"]
+      self.torqMax = cp_cruise.vl["ECM_TRQ"]["ENGINE_TORQ_MAX"]
+      self.transmission_gear = int(cp_cruise.vl['TCM_A7']["CurrentGear"])
+      self.gasRpm = cp_cruise.vl["ECM_1"]["ENGINE_RPM"]
+      self.engine_torque = cp_cruise.vl["ECM_1"]["ENGINE_TORQUE"]
       if self.CP.carFingerprint in HYBRID_CARS:
-        self.wheelTorqMin = cp.vl["AXLE_TORQ"]["AXLE_TORQ_MIN"]
-        self.wheelTorqMax = cp.vl["AXLE_TORQ"]["AXLE_TORQ_MAX"]
+        self.wheelTorqMin = cp_cruise.vl["AXLE_TORQ"]["AXLE_TORQ_MIN"]
+        self.wheelTorqMax = cp_cruise.vl["AXLE_TORQ"]["AXLE_TORQ_MAX"]
     else:
       self.longEnabled = False
       ret.jvePilotCarState.longControl = False
@@ -158,7 +158,7 @@ class CarState(CarStateBase):
         ret.cruiseState.enabled = ret.cruiseState.available # stay enabled
         ret.cruiseState.standstill = True # we want to resume
 
-    self.das_3 = cp.vl['DAS_3']
+    self.das_3 = cp_cruise.vl['DAS_3']
     self.acc_accelerating = self.das_3["ENGINE_TORQUE_REQUEST_MAX"] == 1
     self.acc_decelerating = self.das_3["ACC_DECEL_REQ"] == 1
 
