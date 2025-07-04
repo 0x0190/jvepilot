@@ -176,7 +176,7 @@ class CarController(CarControllerBase):
 
     if CS.brake_hold:
       if CS.das_3['ACC_DECEL_REQ'] == 1:
-        self.brake_hold_decel = CS.das_3['ACC_ACCEL']
+        self.brake_hold_decel = CS.das_3['ACC_DECEL']
       elif self.brake_hold_decel < -2.0:
         self.brake_hold_decel -= 0.06 # not too fast!
 
