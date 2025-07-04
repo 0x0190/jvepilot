@@ -177,19 +177,21 @@ class CarController(CarControllerBase):
     if CS.brake_hold:
       if CS.das_3['ACC_DECEL_REQ'] == 1:
         self.brake_hold_decel = CS.das_3['ACC_DECEL']
-      elif self.brake_hold_decel < -2.0:
-        self.brake_hold_decel -= 0.06 # not too fast!
 
-      can_sends.append(chryslercan.das_3_command(self.packer,
-                                                 2 if counter_das_3_changed else 3,
-                                                 False,
-                                                 False,
-                                                 None,
-                                                 None,
-                                                 True,
-                                                 self.brake_hold_decel,
-                                                 False,
-                                                 CS.das_3))
+      if CS.das_3['ACC_ACTIVE'] != 1: # wait for ACC to cancel
+        if self.brake_hold_decel > -2.0:
+          self.brake_hold_decel -= 0.06 # not too fast!
+
+        can_sends.append(chryslercan.das_3_command(self.packer,
+                                                   2 if counter_das_3_changed else 3,
+                                                   False,
+                                                   False,
+                                                   None,
+                                                   None,
+                                                   False,
+                                                   self.brake_hold_decel,
+                                                   False,
+                                                   CS.das_3))
 
   def wheel_button_control(self, CC, CS, can_sends, enabled, das_bus, cancel, resume):
     button_counter = CS.button_counter
