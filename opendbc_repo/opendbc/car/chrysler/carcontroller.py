@@ -162,14 +162,15 @@ class CarController(CarControllerBase):
     counter_das_3_changed = CS.das_3['COUNTER'] != self.last_das_3_counter
     self.last_das_3_counter = CS.das_3['COUNTER']
 
+    if not CS.brake_hold and CS.out.cruiseState.enabled and CS.acc_decelerating and CS.out.standstill:
+      CS.brake_hold = True
+
     if not CC.enabled or CS.longControl \
       or CS.acc_accelerating or not CS.out.standstill \
-      or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel) or CS.out.brakePressed:
+      or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel) \
+      or CS.out.brakePressed:
       CS.brake_hold = False
       return
-
-    if not CS.brake_hold and CS.out.cruiseState.enabled:
-      CS.brake_hold = CS.out.cruiseState.standstill and CS.out.standstill
 
     if CS.brake_hold:
       can_sends.append(chryslercan.das_3_command(self.packer,

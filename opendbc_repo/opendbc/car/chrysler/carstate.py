@@ -159,7 +159,7 @@ class CarState(CarStateBase):
         ret.cruiseState.standstill = True # we want to resume
 
     self.das_3 = cp.vl['DAS_3']
-    self.acc_accelerating = self.das_3["ACC_GO"] == 1 or self.das_3["ENGINE_TORQUE_REQUEST_MAX"] == 1
+    self.acc_accelerating = self.das_3["ENGINE_TORQUE_REQUEST_MAX"] == 1
     self.acc_decelerating = self.das_3["ACC_DECEL_REQ"] == 1
 
     self.das_5 = cp.vl['DAS_5']
