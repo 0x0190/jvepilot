@@ -1,4 +1,8 @@
-Version jvePilot-0.9.8(v3.17)
+Version jvePilot-0.9.8(v3.18)
+========================
+* Supports for the new acceleration gating in Chill mode
+
+* Version jvePilot-0.9.8(v3.17)
 ========================
 * Proper handling of ACC long-press so you can hold it down to increment by 1 or 5
 * Fix beeping on ignition off

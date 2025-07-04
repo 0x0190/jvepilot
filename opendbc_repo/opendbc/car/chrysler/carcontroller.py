@@ -203,6 +203,9 @@ class CarController(CarControllerBase):
     else:
       targetFuture = 0
 
+    if not self.sm['longitudinalPlan'].allowThrottle: # coasting?
+      targetFuture = CS.out.vEgo - CV.MPH_TO_MS * 4
+
     target = self.acc_hysteresis(targetFuture)
     if eco_limit:
       target = min(target, CS.out.vEgo + (eco_limit * CV.MPH_TO_MS))
