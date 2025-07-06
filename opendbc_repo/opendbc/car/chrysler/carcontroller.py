@@ -55,7 +55,6 @@ class CarController(CarControllerBase):
     self.last_personality = None
     self.low_steer = not self.CP.flags & ChryslerFlags.HIGHER_MIN_STEERING_SPEED
     self.steer_gap = 0.5 if self.CP.carFingerprint in RAM_CARS else 3.0
-    self.brake_hold_decel = 0
 
     self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
 
@@ -164,7 +163,6 @@ class CarController(CarControllerBase):
     self.last_das_3_counter = CS.das_3['COUNTER']
 
     if not CS.brake_hold and CS.out.cruiseState.enabled and CS.acc_decelerating and CS.out.standstill:
-      self.brake_hold_decel = 0
       CS.brake_hold = True
 
     if not CC.enabled or CS.longControl \
@@ -175,13 +173,7 @@ class CarController(CarControllerBase):
       return
 
     if CS.brake_hold:
-      if CS.das_3['ACC_DECEL_REQ'] == 1:
-        self.brake_hold_decel = CS.das_3['ACC_DECEL']
-
       if CS.das_3['ACC_ACTIVE'] != 1: # wait for ACC to cancel
-        if self.brake_hold_decel > -2.0:
-          self.brake_hold_decel -= 0.06 # not too fast!
-
         can_sends.append(chryslercan.das_3_command(self.packer,
                                                    2 if counter_das_3_changed else 3,
                                                    False,
@@ -189,7 +181,7 @@ class CarController(CarControllerBase):
                                                    None,
                                                    None,
                                                    False,
-                                                   self.brake_hold_decel,
+                                                   -2.0,
                                                    False,
                                                    CS.das_3))
 
@@ -206,8 +198,6 @@ class CarController(CarControllerBase):
       if cancel:
         buttons_to_press = ['ACC_Cancel']
         CS.brake_hold = False
-      elif CS.brake_hold and CS.acc_decelerating: # We want to take control of ACC brakes
-        buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]
