@@ -55,6 +55,7 @@ class CarController(CarControllerBase):
     self.last_personality = None
     self.low_steer = not self.CP.flags & ChryslerFlags.HIGHER_MIN_STEERING_SPEED
     self.steer_gap = 0.5 if self.CP.carFingerprint in RAM_CARS else 3.0
+    self.brake_hold_decel = 0
 
     self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
 
@@ -173,7 +174,9 @@ class CarController(CarControllerBase):
       return
 
     if CS.brake_hold:
-      if CS.das_3['ACC_ACTIVE'] != 1: # wait for ACC to cancel
+      if CS.das_3['ACC_ACTIVE'] == 1: # wait for ACC to cancel
+        self.brake_hold_decel = CS.das_3['ACC_DECEL']
+      else:
         can_sends.append(chryslercan.das_3_command(self.packer,
                                                    2 if counter_das_3_changed else 3,
                                                    False,
@@ -181,7 +184,7 @@ class CarController(CarControllerBase):
                                                    None,
                                                    None,
                                                    False,
-                                                   -2.0,
+                                                   self.brake_hold_decel,
                                                    False,
                                                    CS.das_3))
 
