@@ -55,7 +55,10 @@ class CarController(CarControllerBase):
     self.last_personality = None
     self.low_steer = not self.CP.flags & ChryslerFlags.HIGHER_MIN_STEERING_SPEED
     self.steer_gap = 0.5 if self.CP.carFingerprint in RAM_CARS else 3.0
+
+    self.brake_hold_enabled = self.settingsParams.get_bool("jvePilot.settings.brakeHold")
     self.brake_hold_decel = 0
+    self.brake_hold_frames = 0
 
     self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
 
@@ -163,7 +166,8 @@ class CarController(CarControllerBase):
     counter_das_3_changed = CS.das_3['COUNTER'] != self.last_das_3_counter
     self.last_das_3_counter = CS.das_3['COUNTER']
 
-    if not CS.brake_hold and CS.out.cruiseState.enabled and CS.acc_decelerating and CS.out.standstill:
+    if not CS.brake_hold and CS.out.cruiseState.enabled and CS.acc_decelerating and CS.out.standstill and self.brake_hold_enabled:
+      self.brake_hold_frames = 0
       CS.brake_hold = True
 
     if not CC.enabled or CS.longControl \
@@ -174,15 +178,16 @@ class CarController(CarControllerBase):
       return
 
     if CS.brake_hold:
-      if CS.das_3['ACC_ACTIVE'] == 1: # wait for ACC to cancel
-        self.brake_hold_decel = CS.das_3['ACC_DECEL']
+      if CS.cruise_active_actual:
+        self.brake_hold_frames += 1
+        self.brake_hold_decel = min(self.brake_hold_decel, CS.das_3['ACC_DECEL']) if CS.out.standstill else -2.0
       else:
         can_sends.append(chryslercan.das_3_command(self.packer,
                                                    2 if counter_das_3_changed else 3,
                                                    False,
                                                    False,
                                                    None,
-                                                   None,
+                                                   2,
                                                    False,
                                                    self.brake_hold_decel,
                                                    False,
@@ -201,6 +206,8 @@ class CarController(CarControllerBase):
       if cancel:
         buttons_to_press = ['ACC_Cancel']
         CS.brake_hold = False
+      elif self.brake_hold and self.brake_hold_frames > 10 and CS.cruise_active_actual:
+        buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]

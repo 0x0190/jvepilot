@@ -67,6 +67,7 @@ class CarState(CarStateBase):
     self.brake_hold = False
     self.acc_accelerating = False
     self.acc_decelerating = False
+    self.cruise_active_actual = False
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -161,6 +162,7 @@ class CarState(CarStateBase):
     self.das_3 = cp_cruise.vl['DAS_3']
     self.acc_accelerating = self.das_3["ENGINE_TORQUE_REQUEST_MAX"] == 1
     self.acc_decelerating = self.das_3["ACC_DECEL_REQ"] == 1
+    self.cruise_active_actual = self.das_3["ACC_ACTIVE"] == 1
 
     self.das_5 = cp.vl['DAS_5']
     self.lkasHeartbit = cp_cam.vl["LKAS_HEARTBIT"]
