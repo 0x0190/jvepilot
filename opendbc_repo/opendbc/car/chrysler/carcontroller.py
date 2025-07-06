@@ -170,10 +170,11 @@ class CarController(CarControllerBase):
       self.brake_hold_frames = 0
       CS.brake_hold = True
 
-    if not CC.enabled or CS.longControl \
-      or CS.acc_accelerating or not CS.out.standstill \
-      or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel) \
-      or CS.out.brakePressed:
+    if CS.brake_hold and \
+      (not CC.enabled or not CS.out.cruiseState.enabled
+       or CS.acc_accelerating or not CS.out.standstill
+       or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel)
+       or CS.out.brakePressed):
       CS.brake_hold = False
       return
 
@@ -206,8 +207,8 @@ class CarController(CarControllerBase):
       if cancel:
         buttons_to_press = ['ACC_Cancel']
         CS.brake_hold = False
-      elif self.brake_hold and self.brake_hold_frames > 10 and CS.cruise_active_actual:
-        buttons_to_press = ['ACC_Cancel']
+      #elif self.brake_hold and self.brake_hold_frames > 100 and CS.cruise_active_actual:
+      #  buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]
