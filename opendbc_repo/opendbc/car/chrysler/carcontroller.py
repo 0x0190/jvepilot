@@ -215,7 +215,7 @@ class CarController(CarControllerBase):
           if button_counter_offset is not None:
             if resume or (CS.brake_hold and CS.out.gasPressed):
               buttons_to_press = ["ACC_Resume"]
-            elif not CS.brake_hold and CS.out.cruiseState.enabled:  # Control ACC
+            elif not CS.brake_hold and CS.cruise_active_actual:  # Control ACC
               buttons_to_press = [self.auto_follow_button(CC, CS), self.hybrid_acc_button(CC, CS)]
 
       # ACC Auto enable
