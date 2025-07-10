@@ -166,7 +166,9 @@ class CarController(CarControllerBase):
     counter_das_3_changed = CS.das_3['COUNTER'] != self.last_das_3_counter
     self.last_das_3_counter = CS.das_3['COUNTER']
 
-    if not CS.brake_hold and CS.out.cruiseState.enabled and CS.acc_decelerating and CS.out.standstill and self.brake_hold_enabled:
+    if not CS.brake_hold \
+      and CS.cruise_active_actual and CS.acc_decelerating and CS.out.standstill \
+      and self.brake_hold_enabled:
       self.brake_hold_frames = 0
       CS.brake_hold = True
 
