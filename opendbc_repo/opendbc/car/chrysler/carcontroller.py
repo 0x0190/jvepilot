@@ -176,7 +176,7 @@ class CarController(CarControllerBase):
       (not CC.enabled or not CS.out.cruiseState.enabled
        or CS.acc_accelerating or not CS.out.standstill
        or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel)
-       or CS.out.brakePressed):
+       or CS.out.gasPressed or CS.out.brakePressed):
       CS.brake_hold = False
       return
 
@@ -209,15 +209,15 @@ class CarController(CarControllerBase):
       if cancel:
         buttons_to_press = ['ACC_Cancel']
         CS.brake_hold = False
-      #elif self.brake_hold and self.brake_hold_frames > 100 and CS.cruise_active_actual:
-      #  buttons_to_press = ['ACC_Cancel']
+      elif self.brake_hold and self.brake_hold_frames > 250 and CS.cruise_active_actual:
+        buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]
           if button_counter_offset is not None:
-            if resume or (CS.brake_hold and CS.out.gasPressed):
+            if resume:
               buttons_to_press = ["ACC_Resume"]
-            elif not CS.brake_hold and CS.cruise_active_actual:  # Control ACC
+            elif CS.cruise_active_actual:  # Control ACC
               buttons_to_press = [self.auto_follow_button(CC, CS), self.hybrid_acc_button(CC, CS)]
 
       # ACC Auto enable
