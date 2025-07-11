@@ -58,7 +58,6 @@ class CarController(CarControllerBase):
 
     self.brake_hold_enabled = self.settingsParams.get_bool("jvePilot.settings.brakeHold")
     self.brake_hold_decel = 0
-    self.brake_hold_frames = 0
 
     self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
 
@@ -169,7 +168,6 @@ class CarController(CarControllerBase):
     if not CS.brake_hold \
       and CS.cruise_active_actual and CS.acc_decelerating and CS.out.standstill \
       and self.brake_hold_enabled:
-      self.brake_hold_frames = 0
       CS.brake_hold = True
 
     if CS.brake_hold and \
@@ -182,7 +180,6 @@ class CarController(CarControllerBase):
 
     if CS.brake_hold:
       if CS.cruise_active_actual:
-        self.brake_hold_frames += 1
         self.brake_hold_decel = min(self.brake_hold_decel, CS.das_3['ACC_DECEL']) if CS.out.standstill else -2.0
       else:
         can_sends.append(chryslercan.das_3_command(self.packer,
@@ -209,8 +206,6 @@ class CarController(CarControllerBase):
       if cancel:
         buttons_to_press = ['ACC_Cancel']
         CS.brake_hold = False
-      elif self.brake_hold and self.brake_hold_frames > 250 and CS.cruise_active_actual:
-        buttons_to_press = ['ACC_Cancel']
       elif not button_pressed(CS.out, ButtonType.cancel):
         if enabled and not CS.out.brakePressed:
           button_counter_offset = [1, 1, 0, None][self.button_frame % 4]
