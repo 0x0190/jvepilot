@@ -174,7 +174,7 @@ class CarController(CarControllerBase):
       (not CC.enabled or not CS.out.cruiseState.enabled
        or CS.acc_accelerating or not CS.out.standstill
        or CC.cruiseControl.cancel or button_pressed(CS.out, ButtonType.cancel)
-       or CS.out.gasPressed or CS.out.brakePressed):
+       or CS.out.gasPressed or CS.out.brakePressed or not CS.forward_gear):
       CS.brake_hold = False
       return
 

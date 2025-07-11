@@ -1,5 +1,6 @@
 Version jvePilot-0.9.8(v3.18)
 ========================
+* Brake hold when stopped behind lead vehicle
 * Supports for the new acceleration gating in Chill mode
 
 * Version jvePilot-0.9.8(v3.17)

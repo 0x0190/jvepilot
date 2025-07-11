@@ -68,6 +68,7 @@ class CarState(CarStateBase):
     self.acc_accelerating = False
     self.acc_decelerating = False
     self.cruise_active_actual = False
+    self.forward_gear = False
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -103,6 +104,8 @@ class CarState(CarStateBase):
       ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(cp.vl["Transmission_Status"]["Gear_State"], None))
     else:
       ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(cp.vl["GEAR"]["PRNDL"], None))
+    self.forward_gear = ret.gearShifter in FORWARD_GEARS
+
     ret.vEgoRaw = cp.vl["ESP_8"]["Vehicle_Speed"] * CV.KPH_TO_MS
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = not ret.vEgoRaw > 0.001
@@ -205,7 +208,7 @@ class CarState(CarStateBase):
     ret.jvePilotCarState.autoFollow = self.auto_follow
     ret.jvePilotCarState.lkasDisabled = self.lkas_disabled
     ret.jvePilotCarState.aolcReady = self.cachedParams.get_bool('jvePilot.settings.steer.aolc',1000) \
-                                     and ret.cruiseState.available and ret.gearShifter in FORWARD_GEARS
+                                     and ret.cruiseState.available and self.forward_gear
 
     return ret
 
