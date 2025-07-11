@@ -146,7 +146,7 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
   // Brake Hold
   addItem(new ParamControl("jvePilot.settings.brakeHold",
                            "EXPERIMENTAL: Brake Hold",
-                           "Enable this setting stay stopped when ACC stops behind a lead car",
+                           "Say stopped when ACC stops behind a lead car then resume when lead car resumes.",
                            "../assets/jvepilot/settings/icon_brake_hold.svg",
                            this));
 
