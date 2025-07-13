@@ -158,7 +158,7 @@ class CarState(CarStateBase):
       ret.cruiseState.nonAdaptive = cp_cruise.vl["DAS_4"]["ACC_STATE"] in (1, 2)  # 1 NormalCCOn and 2 NormalCCSet
       ret.cruiseState.standstill = cp_cruise.vl["DAS_3"]["ACC_STANDSTILL"] == 1
       ret.accFaulted = cp_cruise.vl["DAS_3"]["ACC_FAULTED"] != 0
-      if not ret.cruiseState.enabled and ret.standstill and self.brake_hold:
+      if not ret.cruiseState.enabled and ret.standstill and self.forward_gear and self.brake_hold:
         ret.cruiseState.enabled = ret.cruiseState.available # stay enabled
         ret.cruiseState.standstill = True # we want to resume
 
