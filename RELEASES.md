@@ -1,5 +1,6 @@
 Version jvePilot-0.9.8(v3.18)
 ========================
+* Say stopped when ACC stops behind a lead car then resume when lead car resumes
 * Supports for the new acceleration gating in Chill mode
 
 * Version jvePilot-0.9.8(v3.17)

@@ -143,6 +143,14 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
                                   "../assets/jvepilot/settings/icon_acc_eco.png",
                                   &ecoConfigs));
 
+  // Brake Hold
+  addItem(new ParamControl("jvePilot.settings.brakeHold",
+                           "EXPERIMENTAL: Brake Hold",
+                           "Say stopped when ACC stops behind a lead car then resume when lead car resumes.",
+                           "../assets/jvepilot/settings/icon_brake_hold.svg",
+                           this));
+
+
   // misc
   QList<struct ConfigButton> miscConfigs = {
     { "jvePilot.settings.deviceOffset",
