@@ -4,7 +4,7 @@ from opendbc.can.packer import CANPacker
 from opendbc.car import Bus, DT_CTRL, apply_meas_steer_torque_limits
 from opendbc.car.car_helpers import button_pressed
 from opendbc.car.chrysler import chryslercan
-from opendbc.car.chrysler.values import RAM_CARS, CarControllerParams, ChryslerFlags, DRIVE_PERSONALITY
+from opendbc.car.chrysler.values import RAM_CARS, JEEPS, CarControllerParams, ChryslerFlags, DRIVE_PERSONALITY
 from opendbc.car.interfaces import CarControllerBase
 
 from openpilot.selfdrive.car.cruise import V_CRUISE_MIN, V_CRUISE_MIN_IMPERIAL
@@ -56,7 +56,7 @@ class CarController(CarControllerBase):
     self.low_steer = not self.CP.flags & ChryslerFlags.HIGHER_MIN_STEERING_SPEED
     self.steer_gap = 0.5 if self.CP.carFingerprint in RAM_CARS else 3.0
 
-    self.brake_hold_enabled = self.settingsParams.get_bool("jvePilot.settings.brakeHold")
+    self.brake_hold_enabled = self.settingsParams.get_bool("jvePilot.settings.brakeHold") and self.CP.carFingerprint in JEEPS
     self.brake_hold_decel = 0
 
     self.long_controller = LongCarControllerV1(CarController, self.CP, self.params, self.packer)
