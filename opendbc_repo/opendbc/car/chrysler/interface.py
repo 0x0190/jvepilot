@@ -75,7 +75,7 @@ class CarInterface(CarInterfaceBase):
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15, 0.30], [0.03, 0.05]]
         ret.lateralTuning.pid.kf = 0.00006
 
-      ret.experimentalLongitudinalAvailable = False # candidate not in HYBRID_CARS
+      ret.alphaLongitudinalAvailable = False # candidate not in HYBRID_CARS
 
     # Jeep
     elif candidate in (CAR.JEEP_GRAND_CHEROKEE, CAR.JEEP_GRAND_CHEROKEE_2019):
@@ -88,7 +88,7 @@ class CarInterface(CarInterfaceBase):
         ret.lateralTuning.pid.kf = 0.00006
 
       ret.enableBsm = True
-      ret.experimentalLongitudinalAvailable = True
+      ret.alphaLongitudinalAvailable = True
 
     # Ram
     elif candidate == CAR.RAM_1500_5TH_GEN:

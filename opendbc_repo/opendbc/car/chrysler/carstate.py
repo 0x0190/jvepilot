@@ -132,7 +132,7 @@ class CarState(CarStateBase):
     # cruise state
     cp_cruise = cp_cam if self.CP.carFingerprint in RAM_CARS else cp
 
-    self.longControl = (self.CP.experimentalLongitudinalAvailable and cp.vl["DAS_4"]["ACC_STATE"] == 0
+    self.longControl = (self.CP.alphaLongitudinalAvailable and cp.vl["DAS_4"]["ACC_STATE"] == 0
                         and self.cachedParams.get_bool('ExperimentalLongitudinalEnabled', 1000))
     if self.longControl:
       ret.jvePilotCarState.longControl = True
