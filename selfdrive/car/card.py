@@ -22,6 +22,8 @@ from openpilot.selfdrive.car.cruise import VCruiseHelper
 from openpilot.selfdrive.car.car_specific import MockCarState
 
 REPLAY = "REPLAY" in os.environ
+AOLC_ENABLED = 4
+LONG_ENABLED = 32
 
 EventName = log.OnroadEvent.EventName
 
@@ -112,9 +114,9 @@ class Car:
     self.CP.alternativeExperience = 0
 
     if self.params.get_bool("jvePilot.settings.steer.aolc"):
-      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.AOLC_ENABLED
+      self.CP.alternativeExperience |= AOLC_ENABLED
     if self.params.get_bool("ExperimentalLongitudinalEnabled"):
-      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.LONG_ENABLED
+      self.CP.alternativeExperience |= LONG_ENABLED
 
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
