@@ -115,7 +115,7 @@ class Car:
 
     if self.params.get_bool("jvePilot.settings.steer.aolc"):
       self.CP.alternativeExperience |= AOLC_ENABLED
-    if self.params.get_bool("ExperimentalLongitudinalEnabled"):
+    if self.params.get_bool("AlphaLongitudinalEnabled"):
       self.CP.alternativeExperience |= LONG_ENABLED
 
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
