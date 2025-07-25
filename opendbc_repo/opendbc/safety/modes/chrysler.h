@@ -198,6 +198,7 @@ static bool chrysler_tx_hook(const CANPacket_t *to_send) {
 static safety_config chrysler_init(uint16_t param) {
 
   const uint32_t CHRYSLER_PARAM_RAM_DT = 1U;  // set for Ram DT platform
+  const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
   const uint32_t CHRYSLER_PARAM_JEEP = 4U;  // set for Jeep platform
 
   // CAN messages for Chrysler/Jeep platforms
@@ -260,7 +261,6 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_DT_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
 
-#ifdef ALLOW_DEBUG
   // CAN messages for the 5th gen RAM HD platform
   static const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
     .EPS_2            = 0x220,  // EPS driver input torque
@@ -286,10 +286,6 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_HD_ADDRS.LKAS_COMMAND, 0, 8, .check_relay = true},
     {CHRYSLER_RAM_HD_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
-
-  const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
-  bool enable_ram_hd = GET_FLAG(param, CHRYSLER_PARAM_RAM_HD);
-#endif
 
   safety_config ret;
 
