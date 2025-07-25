@@ -207,7 +207,7 @@ static safety_config chrysler_init(uint16_t param) {
     .ESP_1            = 0x140,  // Brake pedal and vehicle speed
     .ESP_8            = 0x11C,  // Brake pedal and vehicle speed
     .ECM_5            = 0x22F,  // Throttle position sensor
-    .DAS_3            = 0x1F4,  // ACC
+    .DAS_3            = 0x1F4,  // ACC engagement states from DASM
     .DAS_5            = 0x271,  // ACC for hybrids
     .DAS_6            = 0x2A6,  // LKAS HUD and auto headlight control from DASM
     .GEAR             = 0x170,  // Current GEAR
@@ -249,8 +249,8 @@ static safety_config chrysler_init(uint16_t param) {
   static const CanMsg CHRYSLER_TX_MSGS[] = {
     {CHRYSLER_ADDRS.CRUISE_BUTTONS, 0, 3, .check_relay = false},
     {CHRYSLER_ADDRS.LKAS_COMMAND, 0, 6, .check_relay = true},
+    {CHRYSLER_ADDRS.DAS_6, 0, 8, .check_relay = true},
     {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5, .check_relay = true},
-    {CHRYSLER_ADDRS.DAS_6, 0, 8, .check_relay = false},
     {CHRYSLER_ADDRS.DAS_3, 0, 8, .check_relay = false},
     {CHRYSLER_ADDRS.DAS_5, 0, 8, .check_relay = false},
   };
@@ -261,6 +261,7 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_DT_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
 
+#ifdef ALLOW_DEBUG
   // CAN messages for the 5th gen RAM HD platform
   static const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
     .EPS_2            = 0x220,  // EPS driver input torque
@@ -286,6 +287,10 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_HD_ADDRS.LKAS_COMMAND, 0, 8, .check_relay = true},
     {CHRYSLER_RAM_HD_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
+
+  const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
+  bool enable_ram_hd = GET_FLAG(param, CHRYSLER_PARAM_RAM_HD);
+#endif
 
   safety_config ret;
 
