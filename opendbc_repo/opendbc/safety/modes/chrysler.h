@@ -110,17 +110,15 @@ static void chrysler_rx_hook(const CANPacket_t *to_push) {
     vehicle_moving = (speed_l != 0) || (speed_r != 0);
   }
 
+  // exit controls on rising edge of gas press
   if ((bus == 0) && (addr == chrysler_addrs->ECM_5)) {
     gas_pressed = GET_BYTE(to_push, 0U) != 0U;
   }
 
+  // exit controls on rising edge of brake press
   if ((bus == 0) && (addr == chrysler_addrs->ESP_1)) {
     brake_pressed = ((GET_BYTE(to_push, 0U) & 0xFU) >> 2U) == 1U;
   }
-
-  //if (!long_allowed) {
-  //  generic_rx_checks((bus == 0) && (addr == chrysler_addrs->LKAS_COMMAND));
-  //}
 }
 
 static bool chrysler_tx_hook(const CANPacket_t *to_send) {
@@ -251,10 +249,10 @@ static safety_config chrysler_init(uint16_t param) {
   static const CanMsg CHRYSLER_TX_MSGS[] = {
     {CHRYSLER_ADDRS.CRUISE_BUTTONS, 0, 3, .check_relay = false},
     {CHRYSLER_ADDRS.LKAS_COMMAND, 0, 6, .check_relay = true},
-    {CHRYSLER_ADDRS.DAS_6, 0, 8, .check_relay = true},
-    {CHRYSLER_ADDRS.DAS_3, 0, 8, .check_relay = true},
-    {CHRYSLER_ADDRS.DAS_5, 0, 8, .check_relay = true},
     {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5, .check_relay = true},
+    {CHRYSLER_ADDRS.DAS_6, 0, 8, .check_relay = false},
+    {CHRYSLER_ADDRS.DAS_3, 0, 8, .check_relay = false},
+    {CHRYSLER_ADDRS.DAS_5, 0, 8, .check_relay = false},
   };
 
   static const CanMsg CHRYSLER_RAM_DT_TX_MSGS[] = {
