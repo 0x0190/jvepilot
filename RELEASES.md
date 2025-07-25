@@ -1,9 +1,28 @@
+Version jvePilot-0.10.0(v3.19)
+========================
+* Version 0.10.0 (2025-07-07)
+  * New driving model
+    * Lead car ground-truth fixes
+    * Ported over VAE from the MLSIM stack
+    * New training architecture described in CVPR paper
+  * Opt-in audio recording for dashcam video
+* Version 0.9.9 (2025-05-23)
+  * New driving model
+    * New training architecture using parts from MLSIM
+  * Steering actuation delay is now learned online
+  * Ford Escape 2023-24 support thanks to incognitojam!
+  * Ford Kuga 2024 support thanks to incognitojam!
+  * Hyundai Nexo 2021 support thanks to sunnyhaibin!
+  * Tesla Model 3 and Y support thanks to lukasloetkolben!
+  * Lexus RC 2023 support thanks to nelsonjchen!
+
+
 Version jvePilot-0.9.8(v3.18)
 ========================
 * Jeeps can now hold the brake after ACC stopes behind a lead car
 * Support for the new acceleration gating in Chill mode
 
-* Version jvePilot-0.9.8(v3.17)
+Version jvePilot-0.9.8(v3.17)
 ========================
 * Proper handling of ACC long-press so you can hold it down to increment by 1 or 5
 * Fix beeping on ignition off

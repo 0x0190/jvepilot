@@ -40,7 +40,7 @@ class CarInterface(CarInterfaceBase):
     return maxAccel
 
   @staticmethod
-  def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, experimental_long, docs) -> structs.CarParams:
+  def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, is_release, docs) -> structs.CarParams:
     ret.brand = "chrysler"
     ret.dashcamOnly = candidate in RAM_HD
 

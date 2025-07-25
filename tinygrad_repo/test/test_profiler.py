@@ -1,9 +1,8 @@
-import unittest, struct, contextlib, statistics
+import unittest, struct, contextlib, statistics, time
 from tinygrad import Device, Tensor, dtypes, TinyJit
 from tinygrad.helpers import CI, getenv, Context
-from tinygrad.device import Buffer, BufferSpec, Compiled, ProfileRangeEvent, ProfileDeviceEvent, ProfileGraphEvent
+from tinygrad.device import Buffer, BufferSpec, Compiled, ProfileRangeEvent, ProfileDeviceEvent, ProfileGraphEvent, cpu_profile
 from tinygrad.runtime.support.hcq import HCQCompiled
-from tinygrad.engine.schedule import create_schedule
 from tinygrad.engine.realize import get_runner
 
 MOCKGPU = getenv("MOCKGPU")
@@ -34,15 +33,15 @@ class TestProfiler(unittest.TestCase):
 
     TestProfiler.a = Tensor([0.,1.], device=Device.DEFAULT).realize()
     TestProfiler.b = self.a + 1
-    si = create_schedule([self.b.lazydata])[-1]
+    si = self.b.schedule()[-1]
 
     TestProfiler.runner = get_runner(TestProfiler.d0.device, si.ast)
-    TestProfiler.b.lazydata.buffer.allocate()
+    TestProfiler.b.uop.buffer.allocate()
 
   def test_profile_kernel_run(self):
     runner_name = TestProfiler.runner._prg.name
     with helper_collect_profile(TestProfiler.d0) as profile:
-      TestProfiler.runner([TestProfiler.b.lazydata.buffer, TestProfiler.a.lazydata.buffer], var_vals={})
+      TestProfiler.runner([TestProfiler.b.uop.buffer, TestProfiler.a.uop.buffer], var_vals={})
 
     profile, _ = helper_profile_filter_device(profile, TestProfiler.d0.device)
     kernel_runs = [x for x in profile if isinstance(x, ProfileRangeEvent)]
@@ -59,7 +58,7 @@ class TestProfiler(unittest.TestCase):
     profile, _ = helper_profile_filter_device(profile, TestProfiler.d0.device)
     kernel_runs = [x for x in profile if isinstance(x, ProfileRangeEvent)]
     assert len(kernel_runs) == 1, "one kernel run is expected"
-    assert kernel_runs[0].is_copy, "kernel should not be copy"
+    assert kernel_runs[0].is_copy, "kernel should be copy"
 
   def test_profile_multiops(self):
     runner_name = TestProfiler.runner._prg.name
@@ -67,7 +66,7 @@ class TestProfiler(unittest.TestCase):
 
     with helper_collect_profile(TestProfiler.d0) as profile:
       buf1.copyin(memoryview(bytearray(struct.pack("ff", 0, 1))))
-      TestProfiler.runner([buf1, TestProfiler.a.lazydata.buffer], var_vals={})
+      TestProfiler.runner([buf1, TestProfiler.a.uop.buffer], var_vals={})
       buf1.copyout(memoryview(bytearray(buf1.nbytes)))
 
     profile, _ = helper_profile_filter_device(profile, TestProfiler.d0.device)
@@ -98,6 +97,18 @@ class TestProfiler(unittest.TestCase):
       evs = [x for x in p if isinstance(x, ProfileRangeEvent)]
       assert len(evs) == 1, "one kernel runs are expected"
       assert evs[0].is_copy, "kernel should be copy"
+
+  def test_profile_multidev_transfer(self):
+    d1 = Device[f"{Device.DEFAULT}:1"]
+
+    buf1 = Tensor.randn(10, 10, device=f"{Device.DEFAULT}:0").realize()
+    with helper_collect_profile(TestProfiler.d0, d1) as profile:
+      buf1.to(f"{Device.DEFAULT}:1").realize()
+
+    profile0, _ = helper_profile_filter_device(profile, TestProfiler.d0.device)
+    kernel_runs = [x for x in profile0 if isinstance(x, ProfileRangeEvent)]
+    assert len(kernel_runs) == 1, "one kernel run is expected"
+    assert kernel_runs[0].is_copy, "kernel should be copy"
 
   @unittest.skipIf(Device.DEFAULT in "METAL" or (MOCKGPU and Device.DEFAULT == "AMD"), "AMD mockgpu does not support queue wait interrupts")
   def test_profile_graph(self):
@@ -147,6 +158,24 @@ class TestProfiler(unittest.TestCase):
       jitter_matrix[i1][i2] = statistics.median(_sync_d2d(d1, d2) - _sync_d2d(d2, d1) for _ in range(20)) / 2 - cpu_diff
       assert abs(jitter_matrix[i1][i2]) < 0.5, "jitter should be less than 0.5ms"
     print("pairwise clock jitter matrix (us):\n" + '\n'.join([''.join([f'{float(item):8.3f}' for item in row]) for row in jitter_matrix]))
+
+  def test_cpu_profile(self):
+    def test_fxn(err=False):
+      time.sleep(0.1)
+      if err: raise Exception()
+      time.sleep(0.1)
+
+    with helper_collect_profile(dev:=TestProfiler.d0) as profile:
+      with cpu_profile("test_1", dev.device):
+        test_fxn(err=False)
+      with self.assertRaises(Exception):
+        with cpu_profile("test_2", dev.device):
+          test_fxn(err=True)
+
+    range_events = [p for p in profile if isinstance(p, ProfileRangeEvent)]
+    self.assertEqual(len(range_events), 2)
+    # record start/end time up to exit (error or success)
+    self.assertGreater(range_events[0].en-range_events[0].st, range_events[1].en-range_events[1].st)
 
 if __name__ == "__main__":
   unittest.main()
