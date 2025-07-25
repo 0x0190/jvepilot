@@ -134,9 +134,7 @@ static bool chrysler_tx_hook(const CANPacket_t *to_send) {
   };
 
   const TorqueSteeringLimits CHRYSLER_JEEPS_STEERING_LIMITS = {
-    .max_steer = 261,
     .max_rt_delta = 225, // 6 max rate up * 100Hz send rate * 250000 RT interval / 1000000 = 150 ; 150 * 1.5 for safety pad = 225
-    .max_rt_interval = 250000,
     .max_rate_up = 6,
     .max_rate_down = 6,
     .max_torque_error = 160,
@@ -254,9 +252,9 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_ADDRS.CRUISE_BUTTONS, 0, 3, .check_relay = false},
     {CHRYSLER_ADDRS.LKAS_COMMAND, 0, 6, .check_relay = true},
     {CHRYSLER_ADDRS.DAS_6, 0, 8, .check_relay = true},
-    {CHRYSLER_ADDRS.DAS_3, 0, 8, false},
-    {CHRYSLER_ADDRS.DAS_5, 0, 8, false},
-    {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5, false},
+    {CHRYSLER_ADDRS.DAS_3, 0, 8, .check_relay = true},
+    {CHRYSLER_ADDRS.DAS_5, 0, 8, .check_relay = true},
+    {CHRYSLER_ADDRS.LKAS_HEARTBIT, 0, 5, .check_relay = true},
   };
 
   static const CanMsg CHRYSLER_RAM_DT_TX_MSGS[] = {
