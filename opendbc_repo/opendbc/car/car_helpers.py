@@ -143,7 +143,7 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
   exact_match = True
   source = CarParams.FingerprintSource.can
 
-  selected = params.get("jvePilot.settings.selectedCar")
+  selected = params.get("jvePilot.settings.selectedCar", return_default=True)
   print(f"Car override selected: {selected}")
   if selected == b"Grand Cherokee 2018":
     fw_candidates = [CHRYSLER_CAR.JEEP_GRAND_CHEROKEE]
