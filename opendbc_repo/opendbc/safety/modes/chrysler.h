@@ -239,7 +239,7 @@ static safety_config chrysler_init(uint16_t param) {
     {.msg = {{514, 0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{CHRYSLER_ADDRS.ECM_5, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{CHRYSLER_ADDRS.DAS_3, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_ADDRS.GEAR, 0, 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.GEAR, 0, 8, .50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
   };
 
   static const CanMsg CHRYSLER_TX_MSGS[] = {
