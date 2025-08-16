@@ -3,17 +3,17 @@
 #include "opendbc/safety/safety_declarations.h"
 
 typedef struct {
-  const unsigned EPS_2;
-  const unsigned ESP_1;
-  const unsigned ESP_8;
-  const unsigned ECM_5;
-  const unsigned DAS_3;
-  const unsigned DAS_5;
-  const unsigned DAS_6;
-  const unsigned GEAR;
-  const unsigned LKAS_COMMAND;
-  const unsigned LKAS_HEARTBIT;
-  const unsigned CRUISE_BUTTONS;
+  const unsigned int EPS_2;
+  const unsigned int ESP_1;
+  const unsigned int ESP_8;
+  const unsigned int ECM_5;
+  const unsigned int DAS_3;
+  const unsigned int DAS_5;
+  const unsigned int DAS_6;
+  const unsigned int GEAR;
+  const unsigned int LKAS_COMMAND;
+  const unsigned int LKAS_HEARTBIT;
+  const unsigned int CRUISE_BUTTONS;
 } ChryslerAddrs;
 
 typedef enum {
