@@ -80,8 +80,7 @@ class CarState(CarStateBase):
 
     button_events = []
     for buttonType in CHECK_BUTTONS:
-      self.check_button(button_events, buttonType, bool(cp.vl[CHECK_BUTTONS[buttonType][0]][CHECK_BUTTONS[buttonType][
-        1]]))
+      self.check_button(button_events, buttonType, bool(cp.vl[CHECK_BUTTONS[buttonType][0]][CHECK_BUTTONS[buttonType][1]]))
     ret.buttonEvents = button_events
 
     # lock info
@@ -222,79 +221,6 @@ class CarState(CarStateBase):
       if not pressed_changed:
         pressed_frames += 1
       button_events.append(car.CarState.ButtonEvent(pressed=pressed, type=button_type, pressedFrames=pressed_frames, cruiseEnabledWhenPressed=cruise_enabled_when_pressed))
-
-  @staticmethod
-  def get_cruise_messages():
-    messages = [
-      ("DAS_3", 50),
-      ("DAS_4", 16),
-      ("DAS_5", 50),
-    ]
-    return messages
-
-  @staticmethod
-  def get_hybrid_messages():
-    messages = [
-      ("AXLE_TORQ", 50),
-    ]
-    return messages
-
-  @staticmethod
-  def get_can_parsers(CP):
-    pt_messages = [
-      # sig_address, frequency
-      ("ESP_1", 50),
-      ("EPS_2", 100),
-      ("ESP_6", 50),
-      ("STEERING", 50),
-      ("ECM_5", 50),
-      ("CRUISE_BUTTONS", 50),
-      ("STEERING_LEVERS", 10),
-      ("ORC_1", 2),
-      ("BCM_1", 1),
-      ("ESP_8", 50),
-      ("ECM_2", 50),
-      ("TRACTION_BUTTON", 1),
-
-      ("ECM_1", 50),
-      ("ECM_TRQ", 50),
-      ("TCM_A7", 50),
-    ]
-
-    if CP.enableBsm:
-      pt_messages.append(("BSM_1", 2))
-
-    if CP.carFingerprint in HYBRID_CARS:
-      pt_messages += CarState.get_hybrid_messages()
-
-    if CP.carFingerprint in RAM_CARS:
-      pt_messages += [
-        ("EPS_3", 50),
-        ("Transmission_Status", 50),
-      ]
-    else:
-      pt_messages += [
-        ("GEAR", 50),
-      ]
-      pt_messages += CarState.get_cruise_messages()
-
-    cam_messages = [
-      ("DAS_6", 4),
-    ]
-
-    if CP.carFingerprint in RAM_CARS:
-      cam_messages += CarState.get_cruise_messages()
-    else:
-      # LKAS_HEARTBIT data needs to be forwarded!
-      forward_lkas_heartbit_messages = [
-        ("LKAS_HEARTBIT", 10),
-      ]
-      cam_messages += forward_lkas_heartbit_messages
-
-    return {
-      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
-      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
-    }
 
   @staticmethod
   def get_can_parsers(CP):
