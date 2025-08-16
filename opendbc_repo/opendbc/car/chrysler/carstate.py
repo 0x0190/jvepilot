@@ -1,6 +1,5 @@
 from opendbc.can import CANDefine, CANParser
 from cereal import car
-from openpilot.common.conversions import Conversions as CV
 from opendbc.car import Bus, create_button_events, structs
 from opendbc.car.chrysler.values import DBC, STEER_THRESHOLD, HYBRID_CARS, RAM_CARS
 from opendbc.car.common.conversions import Conversions as CV
