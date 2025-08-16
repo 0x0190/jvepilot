@@ -195,7 +195,6 @@ static bool chrysler_tx_hook(const CANPacket_t *msg) {
 static safety_config chrysler_init(uint16_t param) {
 
   const uint32_t CHRYSLER_PARAM_RAM_DT = 1U;  // set for Ram DT platform
-  const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
   const uint32_t CHRYSLER_PARAM_JEEP = 4U;  // set for Jeep platform
 
   // CAN messages for Chrysler/Jeep platforms
