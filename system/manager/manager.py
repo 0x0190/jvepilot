@@ -34,7 +34,6 @@ def manager_init() -> None:
   if build_metadata.release_channel:
     params.clear_all(ParamKeyFlag.DEVELOPMENT_ONLY)
 
-
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)
 

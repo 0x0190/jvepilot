@@ -4,19 +4,11 @@ from tinygrad.uop.ops import track_rewrites, _substitute
 from tinygrad.uop.spec import type_verify, tensor_uop_spec
 from tinygrad.uop.symbolic import symbolic_simple
 from tinygrad.helpers import Metadata, all_int, all_same, colored, prod, dedup, unwrap, getenv, pluralize, FUSE_ARANGE, DEBUG, SPLIT_REDUCEOP
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-from tinygrad.dtype import ImageDType
-from tinygrad.kernelize.multi import multi_pm
-from tinygrad.shape.shapetracker import ShapeTracker
-from tinygrad.shape.view import View, strides_for_shape, get_contraction_with_reduce
-from tinygrad.kernelize.grouper import group_realizes, ALWAYS_CONTIGUOUS
-========
 from tinygrad.dtype import ImageDType, dtypes
 from tinygrad.schedule.multi import multi_pm
 from tinygrad.shape.shapetracker import ShapeTracker
 from tinygrad.shape.view import View, strides_for_shape, get_contraction_with_reduce
 from tinygrad.schedule.grouper import group_realizes, ALWAYS_CONTIGUOUS
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
 
 # creation can recurse a lot
 import sys
@@ -196,11 +188,7 @@ def reduce_push_add_ones(src:UOp, r:UOp, view:UOp):
 
 view_left = merge_views+PatternMatcher([
   # view before elementwise and buffer ops
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-  (UPat(Ops.VIEW, src=(UPat({*GroupOp.ALU, Ops.CAST, Ops.BITCAST, Ops.BIND, Ops.LOAD, Ops.STORE, Ops.VALID}, name="e"),), name="view"),
-========
   (UPat(Ops.VIEW, src=(UPat({*GroupOp.ALU, Ops.CAST, Ops.BITCAST, Ops.BIND, Ops.LOAD, Ops.STORE, Ops.VALID, Ops.SINK}, name="e"),), name="view"),
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
    lambda e,view: e.replace(src=tuple(s.view(view.st) for s in e.src))),
   # if there's ones added after reduce, put this before the reduce
   (UPat(Ops.VIEW, src=(UPat(Ops.REDUCE_AXIS, src=(UPat.var("src"),), name="r"),), name="view"), reduce_push_add_ones),
@@ -252,11 +240,7 @@ view_right = merge_views+PatternMatcher([
   # apply view after reduceops
   (UPat(Ops.REDUCE_AXIS, src=(UPat(Ops.VIEW, src=(UPat(GroupOp.All-ALWAYS_CONTIGUOUS, name="src"),), name="v"),), name="r"), reduceop_view_right),
   # apply view after elementwise ops
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-  (UPat(GroupOp.All-{Ops.SINK, Ops.GBARRIER, Ops.REDUCE_AXIS}, name="root"), elementwise_view_right),
-========
   (UPat(GroupOp.All-{Ops.SINK, Ops.REDUCE_AXIS}, name="root"), elementwise_view_right),
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
   # merge axes for double reduce (invert of SPLIT_REDUCEOP=1)
   (UPat(Ops.REDUCE_AXIS, src=(UPat(Ops.REDUCE_AXIS, name="r1"),), name="r2"),
    lambda r1,r2: r1.replace(arg=(r1.arg[0], r2.arg[1]+r1.arg[1])) if r1.arg[0] is r2.arg[0] else None),
@@ -274,12 +258,8 @@ add_buffer_ops = PatternMatcher([
   # passthrough ASSIGN
   (UPat(Ops.ASSIGN, name="x"), lambda x: x.src[1]),
   # VALID
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-  (UPat(Ops.VIEW, src=(UPat.cvar(),), name="self"), UOp.valid),
-========
   (UPat(Ops.VIEW, src=(UPat.cvar(),), name="self"),
    lambda self: UOp.where(UOp(Ops.VALID, dtypes.bool, (UOp(Ops.VIEW, arg=self.st),)), self.const_like(self.base.arg), 0)),
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
 ])
 
 def check_load_st(glbl:UOp, view:UOp):
@@ -406,13 +386,8 @@ do_fuse = PatternMatcher([
   (UPat(Ops.REDUCE_AXIS, name="root"), fuse_arange),
 ])
 
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-add_gbarrier = PatternMatcher([(UPat(GroupOp.All-{Ops.GBARRIER, Ops.ASSIGN}, name="x"),
-                                lambda ctx,x: x.replace(tag=1).gbarrier() if x in ctx and x.tag is None else None)])
-========
 add_contiguous = PatternMatcher([(UPat(GroupOp.All-{Ops.CONTIGUOUS, Ops.ASSIGN}, name="x"),
                                 lambda ctx,x: x.replace(tag=1).contiguous() if x in ctx and x.tag is None else None)])
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
 
 # TODO: get this from the device through GrouperOpts
 DEVICE_MAX_BUFS = {"METAL":32, "WEBGPU":8}
@@ -424,34 +399,18 @@ def limit_bufs(root:UOp):
   # count number of unique buffers flowing into this op
   bufs: set[UOp] = set()
   def gate_input(u:UOp):
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-    if (is_load:=(u.op in {Ops.BUFFER, Ops.GBARRIER, Ops.ASSIGN, Ops.MSTACK})): bufs.add(u)
-========
     if (is_load:=(u.op in {Ops.BUFFER, Ops.CONTIGUOUS, Ops.ASSIGN, Ops.MSTACK})): bufs.add(u)
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
     return not is_load
   root.toposort(gate=gate_input)
   # NOTE: this -1 is for the output buffer
   if len(bufs)>=MAX_BUFS-1:
     return root.replace(src=tuple(s if s.base in bufs else s.replace(tag=1).contiguous() for s in root.src))
 
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-finalize_gbarrier = PatternMatcher([
-  # if an op takes more than one input, check combined LOADs don't exceed device limits
-  (UPat(set.union(GroupOp.Binary, GroupOp.Ternary), name="root"), limit_bufs),
-  # merge gbarrier
-  (UPat((Ops.GBARRIER, Ops.CONTIGUOUS), src=(UPat(Ops.GBARRIER),), name="x"), lambda x: x.src[0]),
-  # add contiguous to VIEW before GBARRIER
-  (UPat(Ops.GBARRIER, src=(UPat(Ops.VIEW,),), name="x"), lambda x: x.src[0].contiguous().gbarrier()),
-  # remove gbarrier on constants without a contiguous
-  (UPat(Ops.GBARRIER, src=(UPat(Ops.CONST),), name="x"), lambda x: x.src[0]),
-========
 finalize_contiguous = PatternMatcher([
   # if an op takes more than one input, check combined LOADs don't exceed device limits
   (UPat(set.union(GroupOp.Binary, GroupOp.Ternary), name="root"), limit_bufs),
   # merge contiguous
   (UPat(Ops.CONTIGUOUS, src=(UPat(Ops.CONTIGUOUS),), name="x"), lambda x: x.src[0]),
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
   # simplify views
   (UPat(Ops.VIEW, src=(UPat.var('x')), name="v"), lambda x,v: x.view(new_st) if (new_st:=v.arg.simplify()) != v.arg else None),
 ])
@@ -476,17 +435,10 @@ def get_kernelize_map(sink:UOp) -> dict[UOp, UOp]:
   # display the cleaned up tensor graph
   if getenv("VIZ"): graph_rewrite(tensor_map[sink], PatternMatcher([]), name="View Tensor Graph")
 
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/kernelize.py
-  # insert gbarriers in places determined by the realize map
-  realize_map = group_realizes(tensor_map[sink])
-  tensor_map = graph_rewrite_map(tensor_map[sink], add_gbarrier, ctx=realize_map, bottom_up=True, input_map=tensor_map, name="insert_gbarrier")
-  tensor_map = graph_rewrite_map(tensor_map[sink], finalize_gbarrier+remove_tags, input_map=tensor_map, name="finalize_gbarrier")
-========
   # insert contiguous in places determined by the realize map
   realize_map = group_realizes(tensor_map[sink])
   tensor_map = graph_rewrite_map(tensor_map[sink], add_contiguous, ctx=realize_map, bottom_up=True, input_map=tensor_map, name="add_contiguous")
   tensor_map = graph_rewrite_map(tensor_map[sink], finalize_contiguous+remove_tags, input_map=tensor_map, name="finalize_contiguous")
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/kernelize.py
 
   # TODO: move view_left/view_right here
 

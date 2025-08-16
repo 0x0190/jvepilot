@@ -2,10 +2,7 @@ from typing import cast
 import functools, itertools, operator
 from tinygrad.helpers import all_same, all_int, prod, DEBUG, RING, getenv, unwrap
 from tinygrad.uop.ops import Ops, UOp, sint, PatternMatcher, UPat, GroupOp, resolve
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/multi.py
-========
 from tinygrad.device import Device
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/multi.py
 
 # *** allreduce implementation ***
 def handle_allreduce_multirank(buf:UOp, red:UOp) -> UOp|None:
@@ -109,10 +106,7 @@ def mstack_early_shrink(view:UOp, ms:UOp):
   return ms.replace(src=tuple(ret))
 
 replace_allreduce = PatternMatcher([
-<<<<<<<< HEAD:tinygrad_repo/tinygrad/kernelize/multi.py
-========
   (UPat(Ops.ALLREDUCE, src=(UPat.var("buf"), UPat()), name="red"), handle_allreduce_multirank),
->>>>>>>> devel-staging:tinygrad_repo/tinygrad/schedule/multi.py
   (UPat(Ops.ALLREDUCE, src=(UPat.var("buf"), UPat()), name="red"), handle_allreduce),
   # BROADCAST: explicitly expand broadcast copies and combine with MSTACK
   (UPat(Ops.COPY, name="c", src=(UPat(GroupOp.All-{Ops.CONST}, name="x"), UPat(Ops.DEVICE))), lambda c,x:
