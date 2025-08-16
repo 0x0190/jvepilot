@@ -76,14 +76,14 @@ static void chrysler_rx_hook(const CANPacket_t *msg) {
   }
 
   if ((msg->bus == 0) && (msg->addr == chrysler_addrs->GEAR)) {
-    forward_gear = ((GET_BYTE(to_push, 0) >> 2) & 0x7U) >= 4;
+    forward_gear = ((msg->data[0] >> 2) & 0x7U) >= 4;
   }
 
   const unsigned int das_3_bus = (!ram_platform) ? 0U : 2U;
   if ((msg->bus == das_3_bus) && (msg->addr == chrysler_addrs->DAS_3)) {
     if (forward_gear) {
-      const bool cruise_available = GET_BIT(to_push, 20U);
-      const bool lkas_enabled = GET_BIT(to_push, 21U) || ((alternative_experience & ALT_EXP_AOLC_ENABLED) && cruise_available);
+      const bool cruise_available = GET_BIT(msg, 20U);
+      const bool lkas_enabled = GET_BIT(msg, 21U) || ((alternative_experience & ALT_EXP_AOLC_ENABLED) && cruise_available);
       pcm_cruise_check(lkas_enabled);
 
       long_allowed = !vehicle_moving || (!cruise_available && (alternative_experience & ALT_EXP_LONG_ENABLED));
@@ -100,10 +100,10 @@ static void chrysler_rx_hook(const CANPacket_t *msg) {
   // TODO: use the same message for both
   // update vehicle moving
   if ((ram_platform) && (msg->bus == 0) && (msg->addr == chrysler_addrs->ESP_8)) {
-    vehicle_moving = ((GET_BYTE(to_push, 4) << 8) + GET_BYTE(to_push, 5)) != 0U;
+    vehicle_moving = ((msg->data[4] << 8) + msg->data[5]) != 0U;
   } else if ((msg->bus == 0) && (msg->addr == 514)) {
-    int speed_l = (GET_BYTE(to_push, 0) << 4) + (GET_BYTE(to_push, 1) >> 4);
-    int speed_r = (GET_BYTE(to_push, 2) << 4) + (GET_BYTE(to_push, 3) >> 4);
+    int speed_l = (msg->data[0] << 4) + (msg->data[1] >> 4);
+    int speed_r = (msg->data[2] << 4) + (msg->data[3] >> 4);
     vehicle_moving = (speed_l != 0) || (speed_r != 0);
   }
 
@@ -174,7 +174,7 @@ static bool chrysler_tx_hook(const CANPacket_t *msg) {
   }
 
   // block long from sending ACC when a pedal is pressed
-  if (addr == chrysler_addrs->DAS_3 || addr == chrysler_addrs->DAS_5) {
+  if (msg->addr == chrysler_addrs->DAS_3 || msg->addr == chrysler_addrs->DAS_5) {
     tx = !brake_pressed && !gas_pressed;
   }
 
