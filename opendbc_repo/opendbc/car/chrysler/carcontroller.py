@@ -10,7 +10,7 @@ from opendbc.car.interfaces import CarControllerBase
 
 from openpilot.selfdrive.car.cruise import V_CRUISE_MIN, V_CRUISE_MIN_IMPERIAL
 from opendbc.car.chrysler.long_carcontroller_v1 import LongCarControllerV1
-from common.conversions import Conversions as CV
+from opendbc.car.common.conversions import Conversions as CV
 from common.cached_params import CachedParams
 from common.params import Params
 from cereal import car, messaging
