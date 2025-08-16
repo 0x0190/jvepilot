@@ -19,7 +19,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"jvePilot.settings.brakeHold", {PERSISTENT, BOOL, "1"}},
     {"jvePilot.settings.steer.aolc", {PERSISTENT, BOOL, "1"}},
     {"jvePilot.settings.steer.noMinimum", {PERSISTENT, BOOL, "0"}},
-    {"jvePilot.settings.steer.pid", {PERSISTENT, BOOL, "1"}},
+    {"jvePilot.settings.steer.pid", {PERSISTENT, BOOL, "0"}},
     {"jvePilot.settings.autoEnableAcc", {PERSISTENT, BOOL, "1"}},
     {"jvePilot.settings.deviceOffset", {PERSISTENT, STRING}},
     {"jvePilot.settings.reverseAccSpeedChange", {PERSISTENT, BOOL, "1"}},
