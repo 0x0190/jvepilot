@@ -75,8 +75,8 @@ static void chrysler_rx_hook(const CANPacket_t *msg) {
     update_sample(&torque_meas, torque_meas_new);
   }
 
-  if ((msg->bus == 0) && (msg->addr == chrysler_addrs->GEAR)) {
-    forward_gear = ((msg->data[0] >> 2) & 0x7U) >= 4;
+  if ((msg->bus == 0U) && (msg->addr == chrysler_addrs->GEAR)) {
+    forward_gear = ((msg->data[0] >> 2) & 0x7U) >= 4U;
   }
 
   const unsigned int das_3_bus = (!ram_platform) ? 0U : 2U;
@@ -99,9 +99,10 @@ static void chrysler_rx_hook(const CANPacket_t *msg) {
 
   // TODO: use the same message for both
   // update vehicle moving
-  if ((ram_platform) && (msg->bus == 0) && (msg->addr == chrysler_addrs->ESP_8)) {
+  if ((ram_platform) && (msg->bus == 0U) && (msg->addr == chrysler_addrs->ESP_8)) {
     vehicle_moving = ((msg->data[4] << 8) + msg->data[5]) != 0U;
-  } else if ((msg->bus == 0) && (msg->addr == 514)) {
+  }
+  if (!ram_platform && (msg->bus == 0U) && (msg->addr == 514U)) {
     int speed_l = (msg->data[0] << 4) + (msg->data[1] >> 4);
     int speed_r = (msg->data[2] << 4) + (msg->data[3] >> 4);
     vehicle_moving = (speed_l != 0) || (speed_r != 0);
@@ -159,7 +160,7 @@ static bool chrysler_tx_hook(const CANPacket_t *msg) {
 
   // STEERING
   if (msg->addr == chrysler_addrs->LKAS_COMMAND) {
-    int start_byte = (ram_platform) ? 1 : 0;
+    int start_byte = (!ram_platform) ? 0 : 1;
     int desired_torque = ((msg->data[start_byte] & 0x7U) << 8) | msg->data[start_byte + 1];
     desired_torque -= 1024;
 
@@ -257,6 +258,7 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_DT_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
 
+#ifdef ALLOW_DEBUG
   // CAN messages for the 5th gen RAM HD platform
   static const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
     .EPS_2            = 0x220,  // EPS driver input torque
@@ -283,6 +285,10 @@ static safety_config chrysler_init(uint16_t param) {
     {CHRYSLER_RAM_HD_ADDRS.DAS_6, 0, 8, .check_relay = true},
   };
 
+  const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
+  bool enable_ram_hd = GET_FLAG(param, CHRYSLER_PARAM_RAM_HD);
+#endif
+
   safety_config ret;
 
   bool enable_ram_dt = GET_FLAG(param, CHRYSLER_PARAM_RAM_DT);
@@ -293,7 +299,7 @@ static safety_config chrysler_init(uint16_t param) {
     chrysler_addrs = &CHRYSLER_RAM_DT_ADDRS;
     ret = BUILD_SAFETY_CFG(chrysler_ram_dt_rx_checks, CHRYSLER_RAM_DT_TX_MSGS);
 #ifdef ALLOW_DEBUG
-  } else if (GET_FLAG(param, CHRYSLER_PARAM_RAM_HD)) {
+  } else if (enable_ram_hd) {
     ram_platform = true;
     chrysler_platform = CHRYSLER_RAM_HD;
     chrysler_addrs = &CHRYSLER_RAM_HD_ADDRS;
