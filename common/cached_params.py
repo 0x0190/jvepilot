@@ -20,7 +20,7 @@ class CachedParams:
       if current_ms < cached[0] + ms:
         return cached[1]
 
-    gotten = self.params.get(key, encoding='utf8')
+    gotten = self.params.get(key)
     CACHE[key] = [current_ms, gotten]
 
     return gotten
