@@ -1,7 +1,6 @@
+from opendbc.can import CANDefine, CANParser
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
-from opendbc.can.parser import CANParser
-from opendbc.can.can_define import CANDefine
 from opendbc.car import Bus, create_button_events, structs
 from opendbc.car.chrysler.values import DBC, STEER_THRESHOLD, HYBRID_CARS, RAM_CARS
 from opendbc.car.common.conversions import Conversions as CV
@@ -81,7 +80,8 @@ class CarState(CarStateBase):
 
     button_events = []
     for buttonType in CHECK_BUTTONS:
-      self.check_button(button_events, buttonType, bool(cp.vl[CHECK_BUTTONS[buttonType][0]][CHECK_BUTTONS[buttonType][1]]))
+      self.check_button(button_events, buttonType, bool(cp.vl[CHECK_BUTTONS[buttonType][0]][CHECK_BUTTONS[buttonType][
+        1]]))
     ret.buttonEvents = button_events
 
     # lock info
@@ -101,21 +101,16 @@ class CarState(CarStateBase):
 
     # car speed
     if self.CP.carFingerprint in RAM_CARS:
+      ret.vEgoRaw = cp.vl["ESP_8"]["Vehicle_Speed"] * CV.KPH_TO_MS
       ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(cp.vl["Transmission_Status"]["Gear_State"], None))
     else:
+      ret.vEgoRaw = cp.vl["ESP_8"]["Vehicle_Speed"] * CV.KPH_TO_MS
       ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(cp.vl["GEAR"]["PRNDL"], None))
     self.forward_gear = ret.gearShifter in FORWARD_GEARS
 
     ret.vEgoRaw = cp.vl["ESP_8"]["Vehicle_Speed"] * CV.KPH_TO_MS
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = not ret.vEgoRaw > 0.001
-    ret.wheelSpeeds = self.get_wheel_speeds(
-      cp.vl["ESP_6"]["WHEEL_SPEED_FL"],
-      cp.vl["ESP_6"]["WHEEL_SPEED_FR"],
-      cp.vl["ESP_6"]["WHEEL_SPEED_RL"],
-      cp.vl["ESP_6"]["WHEEL_SPEED_RR"],
-      unit=1,
-    )
 
     # button presses
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_stalk(200, cp.vl["STEERING_LEVERS"]["TURN_SIGNALS"] == 1,
@@ -297,6 +292,13 @@ class CarState(CarStateBase):
       cam_messages += forward_lkas_heartbit_messages
 
     return {
-      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], pt_messages, 0),
-      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_messages, 2),
+      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
+    }
+
+  @staticmethod
+  def get_can_parsers(CP):
+    return {
+      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
     }

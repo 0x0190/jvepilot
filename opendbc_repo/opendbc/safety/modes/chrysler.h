@@ -3,17 +3,17 @@
 #include "opendbc/safety/safety_declarations.h"
 
 typedef struct {
-  const int EPS_2;
-  const int ESP_1;
-  const int ESP_8;
-  const int ECM_5;
-  const int DAS_3;
-  const int DAS_5;
-  const int DAS_6;
-  const int GEAR;
-  const int LKAS_COMMAND;
-  const int LKAS_HEARTBIT;
-  const int CRUISE_BUTTONS;
+  const unsigned EPS_2;
+  const unsigned ESP_1;
+  const unsigned ESP_8;
+  const unsigned ECM_5;
+  const unsigned DAS_3;
+  const unsigned DAS_5;
+  const unsigned DAS_6;
+  const unsigned GEAR;
+  const unsigned LKAS_COMMAND;
+  const unsigned LKAS_HEARTBIT;
+  const unsigned CRUISE_BUTTONS;
 } ChryslerAddrs;
 
 typedef enum {
@@ -26,19 +26,19 @@ static bool ram_platform = false;
 static ChryslerPlatform chrysler_platform;
 static const ChryslerAddrs *chrysler_addrs;
 
-static uint32_t chrysler_get_checksum(const CANPacket_t *to_push) {
-  int checksum_byte = GET_LEN(to_push) - 1U;
-  return (uint8_t)(GET_BYTE(to_push, checksum_byte));
+static uint32_t chrysler_get_checksum(const CANPacket_t *msg) {
+  int checksum_byte = GET_LEN(msg) - 1U;
+  return (uint8_t)(msg->data[checksum_byte]);
 }
 
-static uint32_t chrysler_compute_checksum(const CANPacket_t *to_push) {
+static uint32_t chrysler_compute_checksum(const CANPacket_t *msg) {
   // TODO: clean this up
   // http://illmatics.com/Remote%20Car%20Hacking.pdf
   uint8_t checksum = 0xFFU;
-  int len = GET_LEN(to_push);
+  int len = GET_LEN(msg);
   for (int j = 0; j < (len - 1); j++) {
     uint8_t shift = 0x80U;
-    uint8_t curr = (uint8_t)GET_BYTE(to_push, j);
+    uint8_t curr = (uint8_t)msg->data[j];
     for (int i=0; i<8; i++) {
       uint8_t bit_sum = curr & shift;
       uint8_t temp_chk = checksum & 0x80U;
@@ -64,26 +64,23 @@ static uint32_t chrysler_compute_checksum(const CANPacket_t *to_push) {
   return (uint8_t)(~checksum);
 }
 
-static uint8_t chrysler_get_counter(const CANPacket_t *to_push) {
-  return (uint8_t)(GET_BYTE(to_push, 6) >> 4);
+static uint8_t chrysler_get_counter(const CANPacket_t *msg) {
+  return (uint8_t)(msg->data[6] >> 4);
 }
 
-static void chrysler_rx_hook(const CANPacket_t *to_push) {
-  const int bus = GET_BUS(to_push);
-  const int addr = GET_ADDR(to_push);
-
+static void chrysler_rx_hook(const CANPacket_t *msg) {
   // Measured EPS torque
-  if ((bus == 0) && (addr == chrysler_addrs->EPS_2)) {
-    int torque_meas_new = ((GET_BYTE(to_push, 4) & 0x7U) << 8) + GET_BYTE(to_push, 5) - 1024U;
+  if ((msg->bus == 0U) && (msg->addr == chrysler_addrs->EPS_2)) {
+    int torque_meas_new = ((msg->data[4] & 0x7U) << 8) + msg->data[5] - 1024U;
     update_sample(&torque_meas, torque_meas_new);
   }
 
-  if ((bus == 0) && (addr == chrysler_addrs->GEAR)) {
+  if ((msg->bus == 0) && (msg->addr == chrysler_addrs->GEAR)) {
     forward_gear = ((GET_BYTE(to_push, 0) >> 2) & 0x7U) >= 4;
   }
 
-  const int das_3_bus = (ram_platform) ? 2 : 0;
-  if ((bus == das_3_bus) && (addr == chrysler_addrs->DAS_3)) {
+  const unsigned int das_3_bus = (!ram_platform) ? 0U : 2U;
+  if ((msg->bus == das_3_bus) && (msg->addr == chrysler_addrs->DAS_3)) {
     if (forward_gear) {
       const bool cruise_available = GET_BIT(to_push, 20U);
       const bool lkas_enabled = GET_BIT(to_push, 21U) || ((alternative_experience & ALT_EXP_AOLC_ENABLED) && cruise_available);
@@ -102,26 +99,26 @@ static void chrysler_rx_hook(const CANPacket_t *to_push) {
 
   // TODO: use the same message for both
   // update vehicle moving
-  if ((ram_platform) && (bus == 0) && (addr == chrysler_addrs->ESP_8)) {
+  if ((ram_platform) && (msg->bus == 0) && (msg->addr == chrysler_addrs->ESP_8)) {
     vehicle_moving = ((GET_BYTE(to_push, 4) << 8) + GET_BYTE(to_push, 5)) != 0U;
-  } else if ((bus == 0) && (addr == 514)) {
+  } else if ((msg->bus == 0) && (msg->addr == 514)) {
     int speed_l = (GET_BYTE(to_push, 0) << 4) + (GET_BYTE(to_push, 1) >> 4);
     int speed_r = (GET_BYTE(to_push, 2) << 4) + (GET_BYTE(to_push, 3) >> 4);
     vehicle_moving = (speed_l != 0) || (speed_r != 0);
   }
 
   // exit controls on rising edge of gas press
-  if ((bus == 0) && (addr == chrysler_addrs->ECM_5)) {
-    gas_pressed = GET_BYTE(to_push, 0U) != 0U;
+  if ((msg->bus == 0U) && (msg->addr == chrysler_addrs->ECM_5)) {
+    gas_pressed = msg->data[0U] != 0U;
   }
 
   // exit controls on rising edge of brake press
-  if ((bus == 0) && (addr == chrysler_addrs->ESP_1)) {
-    brake_pressed = ((GET_BYTE(to_push, 0U) & 0xFU) >> 2U) == 1U;
+  if ((msg->bus == 0U) && (msg->addr == chrysler_addrs->ESP_1)) {
+    brake_pressed = ((msg->data[0U] & 0xFU) >> 2U) == 1U;
   }
 }
 
-static bool chrysler_tx_hook(const CANPacket_t *to_send) {
+static bool chrysler_tx_hook(const CANPacket_t *msg) {
   const TorqueSteeringLimits CHRYSLER_STEERING_LIMITS = {
     .max_torque = 261,
     .max_rt_delta = 112,
@@ -159,20 +156,18 @@ static bool chrysler_tx_hook(const CANPacket_t *to_send) {
   };
 
   bool tx = true;
-  int addr = GET_ADDR(to_send);
 
   // STEERING
-  if (addr == chrysler_addrs->LKAS_COMMAND) {
+  if (msg->addr == chrysler_addrs->LKAS_COMMAND) {
     int start_byte = (ram_platform) ? 1 : 0;
-    int desired_torque = ((GET_BYTE(to_send, start_byte) & 0x7U) << 8) | GET_BYTE(to_send, start_byte + 1);
+    int desired_torque = ((msg->data[start_byte] & 0x7U) << 8) | msg->data[start_byte + 1];
     desired_torque -= 1024;
 
     const TorqueSteeringLimits limits = chrysler_platform == CHRYSLER_JEEP ? CHRYSLER_JEEPS_STEERING_LIMITS :
                                   chrysler_platform == CHRYSLER_RAM_DT ? CHRYSLER_RAM_DT_STEERING_LIMITS :
                                   chrysler_platform == CHRYSLER_RAM_HD ? CHRYSLER_RAM_HD_STEERING_LIMITS : CHRYSLER_STEERING_LIMITS;
 
-    bool steer_req = (ram_platform) ? (GET_BYTE(to_send, 3) & 0x7U) == 2U : GET_BIT(to_send, 4U);
-
+    bool steer_req = (!ram_platform) ? GET_BIT(msg, 4U) : (msg->data[3] & 0x7U) == 2U;
     if (steer_torque_cmd_checks(desired_torque, steer_req, limits)) {
       tx = false;
     }
@@ -230,20 +225,20 @@ static safety_config chrysler_init(uint16_t param) {
   };
 
   static RxCheck chrysler_ram_dt_rx_checks[] = {
-    {.msg = {{CHRYSLER_RAM_DT_ADDRS.EPS_2, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 100U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ESP_1, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ESP_8, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ECM_5, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_DT_ADDRS.DAS_3, 2, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_DT_ADDRS.EPS_2, 0, 8, 100U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ESP_1, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ESP_8, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_DT_ADDRS.ECM_5, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_DT_ADDRS.DAS_3, 2, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
   };
 
   static RxCheck chrysler_rx_checks[] = {
-    {.msg = {{CHRYSLER_ADDRS.EPS_2, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 100U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_ADDRS.ESP_1, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.EPS_2, 0, 8, 100U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.ESP_1, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     //{.msg = {{ESP_8, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}}},
-    {.msg = {{514, 0, 8, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true, .frequency = 100U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_ADDRS.ECM_5, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_ADDRS.DAS_3, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{514, 0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.ECM_5, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_ADDRS.DAS_3, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{CHRYSLER_ADDRS.GEAR, 0, 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}},
   };
 
@@ -275,11 +270,11 @@ static safety_config chrysler_init(uint16_t param) {
   };
 
   static RxCheck chrysler_ram_hd_rx_checks[] = {
-    {.msg = {{CHRYSLER_RAM_HD_ADDRS.EPS_2, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 100U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ESP_1, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ESP_8, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ECM_5, 0, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
-    {.msg = {{CHRYSLER_RAM_HD_ADDRS.DAS_3, 2, 8, .max_counter = 15U, .ignore_quality_flag = true, .frequency = 50U}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_HD_ADDRS.EPS_2, 0, 8, 100U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ESP_1, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ESP_8, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_HD_ADDRS.ECM_5, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{CHRYSLER_RAM_HD_ADDRS.DAS_3, 2, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},
   };
 
   static const CanMsg CHRYSLER_RAM_HD_TX_MSGS[] = {

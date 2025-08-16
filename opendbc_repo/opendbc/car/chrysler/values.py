@@ -49,7 +49,7 @@ class CAR(Platforms):
                      axleRatio=3.25),
   )
   CHRYSLER_PACIFICA_2019_HYBRID = ChryslerPlatformConfig(
-    [ChryslerCarDocs("Chrysler Pacifica Hybrid 2019-24")],
+    [ChryslerCarDocs("Chrysler Pacifica Hybrid 2019-25")],
     CHRYSLER_PACIFICA_2018_HYBRID.specs,
   )
   CHRYSLER_PACIFICA_2018 = ChryslerPlatformConfig(
