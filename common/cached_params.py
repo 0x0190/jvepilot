@@ -17,7 +17,7 @@ class CachedParams:
       if current_ms < cached[0] + ms:
         return cached[1]
 
-    gotten = self.params.get_bool(key, return_default=True)
+    gotten = self.params.get_bool(key)
     CACHE[key] = [current_ms, gotten]
 
     return gotten
