@@ -79,11 +79,9 @@ def deviceStage(String stageName, String deviceType, List extra_env, def steps) 
         return
     }
 
-    /*
     if (isReplay()) {
       error("REPLAYING TESTS IS NOT ALLOWED. FIX THEM INSTEAD.")
     }
-    */
 
     def extra = extra_env.collect { "export ${it}" }.join('\n');
     def branch = env.BRANCH_NAME ?: 'master';
@@ -270,6 +268,8 @@ node {
           step("test pandad spi", "pytest selfdrive/pandad/tests/test_pandad_spi.py"),
           step("test pandad", "pytest selfdrive/pandad/tests/test_pandad.py", [diffPaths: ["panda", "selfdrive/pandad/"]]),
           step("test amp", "pytest system/hardware/tici/tests/test_amplifier.py"),
+          // TODO: enable once new AGNOS is available
+          // step("test esim", "pytest system/hardware/tici/tests/test_esim.py"),
           step("test qcomgpsd", "pytest system/qcomgpsd/tests/test_qcomgpsd.py", [diffPaths: ["system/qcomgpsd/"]]),
         ])
       },

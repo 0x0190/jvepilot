@@ -37,7 +37,7 @@ class LongCarController:
         accDiff = -1
     if accDiff is not None:
       newEco = CS.out.jvePilotCarState.accEco + accDiff
-      self.settingsParams.put_nonblocking("jvePilot.settings.accEco", str(newEco))
+      self.settingsParams.put_nonblocking("jvePilot.settings.accEco", newEco)
 
     return True
 

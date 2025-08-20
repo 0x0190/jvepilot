@@ -1,7 +1,8 @@
 import math
 from common.numpy_fast import clip, mean
-from opendbc.can.packer import CANPacker
-from opendbc.car import Bus, DT_CTRL, apply_meas_steer_torque_limits
+from opendbc.can import CANPacker
+from opendbc.car import Bus
+from opendbc.car.lateral import apply_meas_steer_torque_limits
 from opendbc.car.car_helpers import button_pressed
 from opendbc.car.chrysler import chryslercan
 from opendbc.car.chrysler.values import RAM_CARS, JEEPS, CarControllerParams, ChryslerFlags, DRIVE_PERSONALITY
@@ -9,7 +10,7 @@ from opendbc.car.interfaces import CarControllerBase
 
 from openpilot.selfdrive.car.cruise import V_CRUISE_MIN, V_CRUISE_MIN_IMPERIAL
 from opendbc.car.chrysler.long_carcontroller_v1 import LongCarControllerV1
-from common.conversions import Conversions as CV
+from opendbc.car.common.conversions import Conversions as CV
 from common.cached_params import CachedParams
 from common.params import Params
 from cereal import car, messaging
@@ -81,7 +82,7 @@ class CarController(CarControllerBase):
     # jvePilot
     if button_pressed(CS.out, ButtonType.lkasToggle, False):
       CS.lkas_disabled = not CS.lkas_disabled
-      self.settingsParams.put_nonblocking("jvePilot.carstate.lkasDisabled", "1" if CS.lkas_disabled else "0")
+      self.settingsParams.put_nonblocking("jvePilot.carstate.lkasDisabled", CS.lkas_disabled)
     if self.frame % 10 == 0:
       lkas_disabled = CS.lkas_disabled or CS.out.steerFaultPermanent
       new_msg = chryslercan.create_lkas_heartbit(self.packer, lkas_disabled, CS.lkasHeartbit)
@@ -148,7 +149,7 @@ class CarController(CarControllerBase):
       personality = acc_eco if CS.longControl else DRIVE_PERSONALITY[acc_eco][follow_distance]
       if personality != self.last_personality:
         self.last_personality = personality
-        self.settingsParams.put_nonblocking('LongitudinalPersonality', str(personality))
+        self.settingsParams.put_nonblocking('LongitudinalPersonality', personality)
 
     self.brake_hold(CS, CC, can_sends)
     self.long_controller.acc(self.sm['longitudinalPlan'], self.frame, CC, CS, can_sends)
