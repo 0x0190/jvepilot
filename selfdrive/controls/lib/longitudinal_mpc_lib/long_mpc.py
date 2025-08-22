@@ -10,7 +10,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.modeld.constants import index_function
 from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
 
-from common.cached_params import CachedParams
+from openpilot.common.cached_params import CachedParams
 
 if __name__ == '__main__':  # generating code
   from openpilot.third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
@@ -60,7 +60,7 @@ STOP_DISTANCE = 6.0
 CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 1.6
 
-cachedParams = cachedParams()
+cachedParams = CachedParams()
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard, long_control=False):
   if personality==log.LongitudinalPersonality.relaxed:
