@@ -246,7 +246,13 @@ class CarController(CarControllerBase):
       targetFuture = CS.out.vEgo - CV.MPH_TO_MS * 4
 
     target = self.acc_hysteresis(targetFuture)
+
     if eco_limit:
+      rate = self.cachedParams.get_float('jvePilot.settings.accEco.reductionRate', 1000)
+      diff = (CS.out.vEgo - CV.MPH_TO_MS * 20) * rate
+      if 0 < diff < eco_limit:
+        eco_limit = max(2, eco_limit - diff)
+
       target = min(target, CS.out.vEgo + (eco_limit * CV.MPH_TO_MS))
 
     target = math.floor(min(CS.out.vCruise, target) * self.round_to_unit)
