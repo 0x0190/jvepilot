@@ -9,7 +9,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"jvePilot.settings.accEco", {PERSISTENT, INT, "1"}},
     {"jvePilot.settings.accEco.speedAheadLevel1", {PERSISTENT, INT, "7"}},
     {"jvePilot.settings.accEco.speedAheadLevel2", {PERSISTENT, INT, "5"}},
-    {"jvePilot.settings.accEco.reductionRate", {PERSISTENT, FLOAT, "0"}},
+    {"jvePilot.settings.accEco.reductionRate", {PERSISTENT, FLOAT, "0.08"}},
     {"jvePilot.settings.accEco.longAccelLevel1", {PERSISTENT, FLOAT, "1.5"}},
     {"jvePilot.settings.accEco.longAccelLevel2", {PERSISTENT, FLOAT, "1.0"}},
     {"jvePilot.settings.autoFollow", {PERSISTENT, BOOL, "1"}},
