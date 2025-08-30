@@ -5,9 +5,7 @@ from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, uds
 from opendbc.car.structs import CarParams
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, p16
-from openpilot.common.params import Params
 
-params = Params()
 Ecu = CarParams.Ecu
 
 
@@ -102,7 +100,7 @@ class CAR(Platforms):
 
 class CarControllerParams:
   def __init__(self, CP):
-    use_pid = params.get_bool("jvePilot.settings.steer.pid")
+    use_pid = CP.usePID
     self.STEER_ERROR_MAX = 80
     self.STEER_STEP = 2 if use_pid else 1
 
