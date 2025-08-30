@@ -1,5 +1,5 @@
 from cereal import car
-from common.params import Params
+from openpilot.common.params import Params
 from opendbc.car.car_helpers import button_pressed
 from opendbc.car.chrysler.values import HYBRID_CARS
 

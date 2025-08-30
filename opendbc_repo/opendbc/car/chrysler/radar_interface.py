@@ -3,7 +3,7 @@ from opendbc.can import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import RadarInterfaceBase
 from opendbc.car.chrysler.values import DBC
-from common.params import Params
+from openpilot.common.params import Params
 from common.cached_params import CachedParams
 from math import tan
 

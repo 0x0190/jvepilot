@@ -6,7 +6,7 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 
 import numpy as np
-from common.params import Params
+from openpilot.common.params import Params
 from common.cached_params import CachedParams
 from opendbc.car.interfaces import FORWARD_GEARS
 

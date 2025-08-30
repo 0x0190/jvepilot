@@ -5,7 +5,7 @@ from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, uds
 from opendbc.car.structs import CarParams
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, p16
-from common.params import Params
+from openpilot.common.params import Params
 
 params = Params()
 Ecu = CarParams.Ecu

@@ -1,4 +1,4 @@
-from common.params import Params
+from openpilot.common.params import Params
 import time
 
 CACHE = {}
