@@ -4,7 +4,7 @@ from opendbc.car import Bus, structs
 from opendbc.car.interfaces import RadarInterfaceBase
 from opendbc.car.chrysler.values import DBC
 from openpilot.common.params import Params
-from common.cached_params import CachedParams
+from openpilot.common.cached_params import CachedParams
 from math import tan
 
 RADAR_MSGS_C = list(range(0x2c2, 0x2d4+2, 2))  # c_ messages 706,...,724

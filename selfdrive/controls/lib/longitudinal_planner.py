@@ -15,7 +15,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 
-from common.cached_params import CachedParams
+from openpilot.common.cached_params import CachedParams
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -10.

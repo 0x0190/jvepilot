@@ -7,7 +7,7 @@ from opendbc.car.chrysler.values import DBC, CAR, RAM_HD, RAM_DT, RAM_CARS, JEEP
 from opendbc.car.interfaces import CarInterfaceBase
 
 from openpilot.common.params import Params
-from common.cached_params import CachedParams
+from openpilot.common.cached_params import CachedParams
 
 params = Params()
 cachedParams = CachedParams()
