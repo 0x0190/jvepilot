@@ -63,6 +63,24 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
       "3-4 Bar Change Over (MPH)",
       "Default: 65 mph, Min: 0, Max: 300\n"
         "Use this to change the speed at which Auto Follow will switch between three to four bars."
+    },
+    { "jvePilot.settings.autoFollow.relaxed",
+      1, 2,
+      "Relaxed Profile Follow Time (seconds)",
+      "Default: 1.80, Min: 1, Max: 2\n"
+        "How much time the model stays behind the lead car in seconds in relaxed mode."
+    },
+    { "jvePilot.settings.autoFollow.standard",
+      1, 2,
+      "Standard Profile Follow Time (seconds)",
+      "Default: 1.40, Min: 1, Max: 2\n"
+        "How much time the model stays behind the lead car in seconds in standard mode."
+    },
+    { "jvePilot.settings.autoFollow.aggressive",
+      1, 2,
+      "Aggressive Profile Follow Time (seconds)",
+      "Default: 1.00, Min: 1, Max: 2\n"
+        "How much time the model stays behind the lead car in seconds in aggressive mode."
     }
   };
   addItem(new ParamControl("jvePilot.settings.autoFollow",
@@ -123,16 +141,24 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
       "Default: 5 mph, Min: 1, Max: 100\n"
         "The higher the number the more acceleration that occurs."
     },
+    { "jvePilot.settings.accEco.reductionRate",
+      0, 2,
+      "Eco speed reduction rate",
+      "Default: 0, Min: 0, Max: 1\n"
+        "For each MPH above 20, this amount is removed from the Eco keep ahead speed."
+    },
     { "jvePilot.settings.accEco.longAccelLevel1",
       0, 2,
       "Max acceleration at Eco 1 (m/s²)",
       "Default: 1 m/s², Min: 0, Max: 2\n"
+        "LONG CONTROL ONLY\n"
         "The higher the number the more acceleration that occurs."
     },
     { "jvePilot.settings.accEco.longAccelLevel2",
       0, 2,
       "Max acceleration at Eco 2 (m/s²)",
       "Default: 1.5 m/s² mph, Min: 0, Max: 2\n"
+        "LONG CONTROL ONLY\n"
         "The higher the number the more acceleration that occurs."
     }
   };
@@ -271,13 +297,6 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
       "../assets/icons/microphone.png",
       true,
-    },
-    {
-      "RecordAudioFeedback",
-      tr("Record Audio Feedback with LKAS button"),
-      tr("Press the LKAS button to record and share driving feedback with the openpilot team. When this toggle is disabled, the button acts as a bookmark button. The event will be highlighted in comma connect and the segment will be preserved on your device's storage.\n\nNote that this feature is only compatible with select cars."),
-      "../assets/icons/microphone.png",
-      false,
     },
     {
       "IsMetric",

@@ -735,7 +735,7 @@ struct CarParams {
   safetyModelDEPRECATED @9 :SafetyModel;
   safetyModelPassiveDEPRECATED @42 :SafetyModel = silent;
   minSpeedCanDEPRECATED @51 :Float32;
-  communityFeatureDEPRECATED @46: Bool;
+  usePID @46: Bool; # repurposed for jvePilot
   axleRatio @53 :Float32; # repurposed for jvePilot
   gearRatios @11 :List(Float32); # repurposed for jvePilot
   steerMaxVDEPRECATED @12 :List(Float32);

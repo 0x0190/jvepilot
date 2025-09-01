@@ -102,7 +102,7 @@ static void chrysler_rx_hook(const CANPacket_t *msg) {
   if ((ram_platform) && (msg->bus == 0U) && (msg->addr == chrysler_addrs->ESP_8)) {
     vehicle_moving = ((msg->data[4] << 8) + msg->data[5]) != 0U;
   }
-  if (!ram_platform && (msg->bus == 0U) && (msg->addr == 514U)) {
+  if ((!ram_platform) && (msg->bus == 0U) && (msg->addr == 514U)) {
     int speed_l = (msg->data[0] << 4) + (msg->data[1] >> 4);
     int speed_r = (msg->data[2] << 4) + (msg->data[3] >> 4);
     vehicle_moving = (speed_l != 0) || (speed_r != 0);
@@ -180,14 +180,13 @@ static bool chrysler_tx_hook(const CANPacket_t *msg) {
   }
 
 //  // FORCE CANCEL: only the cancel button press is allowed
-//  if (addr == chrysler_addrs->CRUISE_BUTTONS) {
-//    const bool is_cancel = GET_BYTE(to_send, 0) == 1U;
-//    const bool is_resume = GET_BYTE(to_send, 0) == 0x10U;
+//  if (msg->addr == chrysler_addrs->CRUISE_BUTTONS) {
+//    const bool is_cancel = msg->data[0] == 1U;
+//    const bool is_resume = msg->data[0] == 0x10U;
 //    const bool allowed = is_cancel || (is_resume && controls_allowed);
 //    if (!allowed) {
 //      tx = false;
 //    }
-//  }
 
   return tx;
 }

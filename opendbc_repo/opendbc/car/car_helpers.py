@@ -145,28 +145,28 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
 
   selected = params.get("jvePilot.settings.selectedCar", return_default=True)
   print(f"Car override selected: {selected}")
-  if selected == b"Grand Cherokee 2018":
+  if selected == "Grand Cherokee 2018":
     fw_candidates = [CHRYSLER_CAR.JEEP_GRAND_CHEROKEE]
     exact_fw_match = True
-  elif selected == b"Grand Cherokee 2019":
+  elif selected == "Grand Cherokee 2019":
     fw_candidates = [CHRYSLER_CAR.JEEP_GRAND_CHEROKEE_2019]
     exact_fw_match = True
-  elif selected == b"Pacifica Hybrid":
+  elif selected == "Pacifica Hybrid":
     fw_candidates = [CHRYSLER_CAR.CHRYSLER_PACIFICA_2018_HYBRID]
     exact_fw_match = True
-  elif selected == b"Pacifica Hybrid 2018":
+  elif selected == "Pacifica Hybrid 2018":
     fw_candidates = [CHRYSLER_CAR.CHRYSLER_PACIFICA_2018_HYBRID]
     exact_fw_match = True
-  elif selected == b"Pacifica Hybrid 2019":
+  elif selected == "Pacifica Hybrid 2019":
     fw_candidates = [CHRYSLER_CAR.CHRYSLER_PACIFICA_2019_HYBRID]
     exact_fw_match = True
-  elif selected == b"Pacifica":
+  elif selected == "Pacifica":
     fw_candidates = [CHRYSLER_CAR.CHRYSLER_PACIFICA_2018]
     exact_fw_match = True
-  elif selected == b"Pacifica 2020":
+  elif selected == "Pacifica 2020":
     fw_candidates = [CHRYSLER_CAR.CHRYSLER_PACIFICA_2020]
     exact_fw_match = True
-  elif selected == b"Durango":
+  elif selected == "Durango":
     fw_candidates = [CHRYSLER_CAR.DODGE_DURANGO]
     exact_fw_match = True
 

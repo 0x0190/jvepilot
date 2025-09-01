@@ -6,8 +6,8 @@ from opendbc.car.chrysler.radar_interface import RadarInterface
 from opendbc.car.chrysler.values import DBC, CAR, RAM_HD, RAM_DT, RAM_CARS, JEEPS, ChryslerFlags, ChryslerSafetyFlags
 from opendbc.car.interfaces import CarInterfaceBase
 
-from common.params import Params
-from common.cached_params import CachedParams
+from openpilot.common.params import Params
+from openpilot.common.cached_params import CachedParams
 
 params = Params()
 cachedParams = CachedParams()

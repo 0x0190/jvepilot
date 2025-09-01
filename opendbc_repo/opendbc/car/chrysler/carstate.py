@@ -6,8 +6,8 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 
 import numpy as np
-from common.params import Params
-from common.cached_params import CachedParams
+from openpilot.common.params import Params
+from openpilot.common.cached_params import CachedParams
 from opendbc.car.interfaces import FORWARD_GEARS
 
 ButtonType = structs.CarState.ButtonEvent.Type
