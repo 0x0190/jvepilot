@@ -90,6 +90,23 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
                            this,
                            &autoFollowConfigs));
 
+  // Auto Lane Change
+  QList<struct ConfigButton> laneChangeConfigs = {
+    { "jvePilot.settings.laneChange.autoLaneChangeTime",
+      0, 10,
+      "Auto Lane Change Time (seconds)",
+      "Default: 0 (disabled), Min: 0, Max: 10\n"
+        "A quick turn signal tap shorter than this time will automatically start a lane change without a steering nudge.\n"
+        "A longer press still requires a nudge. Set to 0 to disable."
+    }
+  };
+  addItem(new LabelControl("Auto Lane Change",
+                           "",
+                           "Set how long a turn signal tap must be to require a steering nudge. Short taps auto-change lanes.",
+                           this,
+                           "../assets/img_chffr_wheel.png",
+                           &laneChangeConfigs));
+
   // Always One Lateral Control
   addItem(new ParamControl("jvePilot.settings.steer.aolc",
                            "Always On Lateral Control",
