@@ -47,11 +47,13 @@ brew "llvm"
 brew "openssl@3.0"
 brew "qt@5"
 brew "zeromq"
+cask "gcc-arm-embedded"
 brew "portaudio"
 brew "gcc@13"
 cask "font-noto-color-emoji"
 EOS
-# cask "gcc-arm-embedded"
+
+# JSP: cask "gcc-arm-embedded" gives an error
 
 echo "[ ] finished brew install t=$SECONDS"
 
