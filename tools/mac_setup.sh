@@ -32,7 +32,7 @@ else
     brew up
 fi
 
-brew bundle --file=- <<-EOS
+HOMEBREW_NO_INSTALL_UPGRADE=1 brew bundle --file=- <<-EOS
 brew "git-lfs"
 brew "zlib"
 brew "capnp"
@@ -52,6 +52,8 @@ brew "portaudio"
 brew "gcc@13"
 cask "font-noto-color-emoji"
 EOS
+
+# JSP: cask "gcc-arm-embedded" gives an error
 
 echo "[ ] finished brew install t=$SECONDS"
 

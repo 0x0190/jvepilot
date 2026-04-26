@@ -36,6 +36,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"jvePilot.carstate.lkasDisabled", {PERSISTENT, BOOL, "0"}},
     {"jvePilot.settings.selectedCar", {PERSISTENT, STRING, "Auto detect"}},
     {"jvePilot.settings.blindspotHighlight", {PERSISTENT, BOOL, "1"}},
+    {"jvePilot.settings.laneChange.autoLaneChangeTime", {PERSISTENT, FLOAT, "0"}},
 
     {"AccessToken", {CLEAR_ON_MANAGER_START | DONT_LOG, STRING}},
     {"AdbEnabled", {PERSISTENT, BOOL}},

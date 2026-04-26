@@ -1,5 +1,6 @@
 from cereal import log
 from openpilot.common.constants import CV
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 
 LaneChangeState = log.LaneChangeState
@@ -39,11 +40,20 @@ class DesireHelper:
     self.keep_pulse_timer = 0.0
     self.prev_one_blinker = False
     self.desire = log.Desire.none
+    self.auto_lane_change_blinker_timer = 0.0
+    self._params = Params()
+    self._auto_lane_change_time = float(self._params.get("jvePilot.settings.laneChange.autoLaneChangeTime") or "0")
+    self._param_refresh_counter = 0
 
   def update(self, carstate, lateral_active, lane_change_prob):
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
     below_lane_change_speed = v_ego < LANE_CHANGE_SPEED_MIN
+
+    self._param_refresh_counter += 1
+    if self._param_refresh_counter >= 200:
+      self._param_refresh_counter = 0
+      self._auto_lane_change_time = float(self._params.get("jvePilot.settings.laneChange.autoLaneChangeTime") or "0")
 
     if not lateral_active or self.lane_change_timer > LANE_CHANGE_TIME_MAX:
       self.lane_change_state = LaneChangeState.off
@@ -53,12 +63,16 @@ class DesireHelper:
       if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed:
         self.lane_change_state = LaneChangeState.preLaneChange
         self.lane_change_ll_prob = 1.0
+        self.auto_lane_change_blinker_timer = 0.0
 
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
-        # Set lane change direction
-        self.lane_change_direction = LaneChangeDirection.left if \
-          carstate.leftBlinker else LaneChangeDirection.right
+        # Only update direction while blinker is active so direction is retained when blinker releases
+        if one_blinker:
+          self.lane_change_direction = LaneChangeDirection.left if \
+            carstate.leftBlinker else LaneChangeDirection.right
+
+        self.auto_lane_change_blinker_timer += DT_MDL
 
         torque_applied = carstate.steeringPressed and \
                          ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
@@ -67,7 +81,12 @@ class DesireHelper:
         blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                               (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
 
-        if not one_blinker or below_lane_change_speed:
+        auto_enabled = self._auto_lane_change_time > 0
+        short_tap = not one_blinker and auto_enabled and self.auto_lane_change_blinker_timer < self._auto_lane_change_time
+
+        if short_tap and not blindspot_detected:
+          self.lane_change_state = LaneChangeState.laneChangeStarting
+        elif not one_blinker or below_lane_change_speed:
           self.lane_change_state = LaneChangeState.off
           self.lane_change_direction = LaneChangeDirection.none
         elif torque_applied and not blindspot_detected:
