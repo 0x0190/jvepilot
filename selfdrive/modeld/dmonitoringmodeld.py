@@ -111,7 +111,7 @@ def get_driverstate_packet(model_output, frame_id: int, location_ts: int, exec_t
 
 
 def main():
-  config_realtime_process(7, 5)
+  config_realtime_process([0, 1, 2, 3], 5)
 
   model = ModelState()
   cloudlog.warning("models loaded, dmonitoringmodeld starting")
