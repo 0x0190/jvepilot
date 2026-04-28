@@ -2,9 +2,30 @@ import os
 import glob
 from openpilot.common.file_chunker import chunk_file, get_chunk_paths
 
-Import('env', 'arch')
+Import('env', 'envCython', 'arch', 'cereal', 'messaging', 'common', 'gpucommon', 'visionipc', 'transformations')
 chunker_file = File("#common/file_chunker.py")
 lenv = env.Clone()
+lenvCython = envCython.Clone()
+
+libs = [cereal, messaging, visionipc, gpucommon, common, 'capnp', 'kj', 'pthread']
+frameworks = []
+
+common_src = [
+  "models/commonmodel.cc",
+  "transforms/loadyuv.cc",
+  "transforms/transform.cc",
+]
+
+# OpenCL is a framework on Mac
+if arch == "Darwin":
+  frameworks += ['OpenCL']
+else:
+  libs += ['OpenCL']
+
+# Set path definitions
+for pathdef, fn in {'TRANSFORM': 'transforms/transform.cl', 'LOADYUV': 'transforms/loadyuv.cl'}.items():
+  for xenv in (lenv, lenvCython):
+    xenv['CXXFLAGS'].append(f'-D{pathdef}_PATH=\\"{File(fn).abspath}\\"')
 
 tinygrad_root = env.Dir("#").abspath
 tinygrad_files = ["#"+x for x in glob.glob(env.Dir("#tinygrad_repo").relpath + "/**", recursive=True, root_dir=tinygrad_root)
@@ -12,6 +33,12 @@ tinygrad_files = ["#"+x for x in glob.glob(env.Dir("#tinygrad_repo").relpath + "
 
 def estimate_pickle_max_size(onnx_size):
   return 1.2 * onnx_size  + 10 * 1024 * 1024  # 20% + 10MB is plenty
+
+# Compile cython
+cython_libs = envCython["LIBS"] + libs
+commonmodel_lib = lenv.Library('commonmodel', common_src)
+lenvCython.Program('models/commonmodel_pyx.so', 'models/commonmodel_pyx.pyx', LIBS=[commonmodel_lib, *cython_libs], FRAMEWORKS=frameworks)
+tinygrad_files = ["#"+x for x in glob.glob(env.Dir("#tinygrad_repo").relpath + "/**", recursive=True, root_dir=env.Dir("#").abspath) if 'pycache' not in x]
 
 # compile warp
 # THREADS=0 is need to prevent bug: https://github.com/tinygrad/tinygrad/issues/14689
