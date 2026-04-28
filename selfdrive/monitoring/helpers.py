@@ -261,8 +261,8 @@ class DriverMonitoring:
       self.wheel_on_right = self.wheel_on_right_last
     driver_data = driver_state.rightDriverData if self.wheel_on_right else driver_state.leftDriverData
     if not all(len(x) > 0 for x in (driver_data.faceOrientation, driver_data.facePosition,
-                                    driver_data.faceOrientationStd, driver_data.facePositionStd)):
-    #                                driver_data.readyProb, driver_data.notReadyProb)):   JSP TODO: Temporarily comment out driver_data.readyProb, driver_data.notReadyProb are not present in the latest dmonitor model
+                                    driver_data.faceOrientationStd, driver_data.facePositionStd,
+                                    driver_data.readyProb, driver_data.notReadyProb)):
       return
 
     self.face_detected = driver_data.faceProb > self.settings._FACE_THRESHOLD
@@ -282,9 +282,7 @@ class DriverMonitoring:
     self.eev2 = driver_data.readyProb[0]
 
     self.distracted_types = self._get_distracted_types()
-    # self.driver_distracted = (DistractedType.DISTRACTED_E2E in self.distracted_types or DistractedType.DISTRACTED_POSE in self.distracted_types
-    # JSP TODO: Temporarily comment out DISTRACTED_E2E because driver_data.notReadyProb is not present in the latest dmonitor model
-    self.driver_distracted = (DistractedType.DISTRACTED_POSE in self.distracted_types
+    self.driver_distracted = (DistractedType.DISTRACTED_E2E in self.distracted_types or DistractedType.DISTRACTED_POSE in self.distracted_types
                                 or DistractedType.DISTRACTED_BLINK in self.distracted_types) \
                               and driver_data.faceProb > self.settings._FACE_THRESHOLD and self.pose.low_std
     self.driver_distraction_filter.update(self.driver_distracted)
