@@ -2173,7 +2173,7 @@ struct DriverStateV2 {
     leftBlinkProb @7 :Float32;
     rightBlinkProb @8 :Float32;
     sunglassesProb @9 :Float32;
-    occludedProb @10 :Float32;
+    phoneProb @10 :Float32;
     readyProb @11 :List(Float32);
     notReadyProb @12 :List(Float32);
   }
