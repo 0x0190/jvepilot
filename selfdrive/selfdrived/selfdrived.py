@@ -330,8 +330,8 @@ class SelfdriveD:
     if not self.sm.all_checks() and no_system_errors:
       if not self.sm.all_alive():
         self.events.add(EventName.commIssue)
-      elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+      #elif not self.sm.all_freq_ok():  JSP TODO: comm speed might be different between new and old DM
+      #  self.events.add(EventName.commIssueAvgFreq)
       else:
         self.events.add(EventName.commIssue)
 
