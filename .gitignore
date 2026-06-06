@@ -14,6 +14,7 @@ model2.png
 a.out
 .hypothesis
 .cache/
+.claude
 
 /docs_site/
 
