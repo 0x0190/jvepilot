@@ -21,7 +21,7 @@ from openpilot.common.pid import PIDController
 
 LOW_SPEED_X = [0, 10, 20, 30, 40]
 #LOW_SPEED_Y = [15, 13, 10, 5]
-LOW_SPEED_Y = [15, 13, 10, 4, 2]   # JSP: Reduce factor at higher speeds to reduce oscillation
+LOW_SPEED_Y = [15, 13, 10, 3, 1]   # JSP: Reduce factor at higher speeds to reduce oscillation
 
 
 class LatControlTorque(LatControl):
