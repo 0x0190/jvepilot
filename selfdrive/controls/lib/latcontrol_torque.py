@@ -5,6 +5,7 @@ from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
 from opendbc.car.interfaces import LatControlInputs
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
+from openpilot.common.cached_params import CachedParams
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
 
@@ -20,7 +21,6 @@ from openpilot.common.pid import PIDController
 # move it at all, this is compensated for too.
 
 LOW_SPEED_X = [0, 10, 20, 30, 40]
-#LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y = [15, 13, 10, 2.5, 0.01]   # JSP: Reduce factor at higher speeds to reduce oscillation
 
 
@@ -32,6 +32,7 @@ class LatControlTorque(LatControl):
                              k_f=self.torque_params.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max)
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
+    self.cached_params = CachedParams()
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -54,7 +55,9 @@ class LatControlTorque(LatControl):
       actual_lateral_accel = actual_curvature * CS.vEgo ** 2
       lateral_accel_deadzone = curvature_deadzone * CS.vEgo ** 2
 
-      low_speed_factor = np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y)**2
+      low_speed_y_40 = np.clip(self.cached_params.get_float('jvePilot.settings.steer.lowSpeedY40', 1000), 0., LOW_SPEED_Y[-2])
+      low_speed_y = LOW_SPEED_Y[:-1] + [low_speed_y_40]
+      low_speed_factor = np.interp(CS.vEgo, LOW_SPEED_X, low_speed_y)**2
       setpoint = desired_lateral_accel + low_speed_factor * desired_curvature
       measurement = actual_lateral_accel + low_speed_factor * actual_curvature
       gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation

@@ -245,6 +245,20 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
                            this,
                            "../assets/img_chffr_wheel.png",
                            &pacificaSteerConfigs));
+  QList<struct ConfigButton> torqueSteerConfigs = {
+    { "jvePilot.settings.steer.lowSpeedY40",
+      0, 2.5,
+      "Torque Steering Factor at 40 m/s",
+      "Default: 0.01, Min: 0, Max: 2.5\\n"
+        "The low-speed steering factor transitions from 2.5 at 30 m/s to this value at 40 m/s, then remains at this value."
+    }
+  };
+  addItem(new LabelControl("High-Speed Torque Steering Factor",
+                           "",
+                           "Tune the 40 m/s endpoint of the low-speed factor used by torque steering control.",
+                           this,
+                           "../assets/img_chffr_wheel.png",
+                           &torqueSteerConfigs));
   // Vision Only
   addItem(new ParamControl("jvePilot.settings.visionOnly",
                            "ADVANCED: Vision only",
