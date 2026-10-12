@@ -224,6 +224,27 @@ JvePilotTogglesPanel::JvePilotTogglesPanel(QWidget *parent) : ListWidget(parent)
                            "Use the PID controller instead of torque for steering.",
                            "../assets/img_chffr_wheel.png",
                            this));
+  // Pacifica high-speed steering torque ramp limits
+  QList<struct ConfigButton> pacificaSteerConfigs = {
+    { "jvePilot.settings.steer.pacificaDeltaUpLow",
+      0, 3,
+      "Pacifica High-Speed Torque Increase Limit",
+      "Default: 3, Min: 0, Max: 3\\n"
+        "At 30 m/s this starts transitioning from the stock limit. At 40 m/s and above, this lower limit is used."
+    },
+    { "jvePilot.settings.steer.pacificaDeltaDownLow",
+      0, 3,
+      "Pacifica High-Speed Torque Decrease Limit",
+      "Default: 3, Min: 0, Max: 3\\n"
+        "At 30 m/s this starts transitioning from the stock limit. At 40 m/s and above, this lower limit is used."
+    }
+  };
+  addItem(new LabelControl("Pacifica High-Speed Steering Limits",
+                           "",
+                           "Set lower steering torque ramp limits for a Pacifica at highway speeds. Values are interpolated from 30 to 40 m/s.",
+                           this,
+                           "../assets/img_chffr_wheel.png",
+                           &pacificaSteerConfigs));
   // Vision Only
   addItem(new ParamControl("jvePilot.settings.visionOnly",
                            "ADVANCED: Vision only",

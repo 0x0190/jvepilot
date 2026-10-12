@@ -5,7 +5,7 @@ from opendbc.car import Bus
 from opendbc.car.lateral import apply_meas_steer_torque_limits
 from opendbc.car.car_helpers import button_pressed
 from opendbc.car.chrysler import chryslercan
-from opendbc.car.chrysler.values import RAM_CARS, JEEPS, CarControllerParams, ChryslerFlags, DRIVE_PERSONALITY
+from opendbc.car.chrysler.values import RAM_CARS, JEEPS, PACIFICA_CARS, CarControllerParams, ChryslerFlags, DRIVE_PERSONALITY
 from opendbc.car.interfaces import CarControllerBase
 
 from openpilot.selfdrive.car.cruise import V_CRUISE_MIN, V_CRUISE_MIN_IMPERIAL
@@ -22,8 +22,11 @@ V_CRUISE_MIN_IMPERIAL_MS = V_CRUISE_MIN_IMPERIAL * CV.KPH_TO_MS
 V_CRUISE_MIN_MS = V_CRUISE_MIN * CV.KPH_TO_MS
 AUTO_FOLLOW_LOCK_MS = 3 * CV.MPH_TO_MS
 EXTEND_FUTURE_MAX = 10 * CV.MPH_TO_MS
+DELTA_LIMIT_START_SPEED = 30.0  # m/s
+DELTA_LIMIT_END_SPEED = 40.0  # m/s
 
 cachedParams = CachedParams()
+
 
 class CarController(CarControllerBase):
   ACCEL_MAX = 2.  # m/s2, high to not limit stock ACC
@@ -136,7 +139,9 @@ class CarController(CarControllerBase):
 
       apply_steer = 0
       if CC.latActive and lkas_control_bit:
-        apply_steer = apply_meas_steer_torque_limits(new_steer, self.apply_torque_last, CS.out.steeringTorqueEps, self.params)
+        steer_delta_up, steer_delta_down = self.get_steer_delta_limits(CS.out.vEgo)
+        apply_steer = apply_meas_steer_torque_limits(new_steer, self.apply_torque_last, CS.out.steeringTorqueEps, self.params,
+                                                      steer_delta_up, steer_delta_down)
 
       self.apply_torque_last = apply_steer
 
@@ -161,6 +166,18 @@ class CarController(CarControllerBase):
     new_actuators.torqueOutputCan = self.apply_torque_last
 
     return new_actuators, can_sends
+
+  def get_steer_delta_limits(self, v_ego):
+    """Reduce Pacifica torque ramp limits linearly from 30 to 40 m/s."""
+    if self.CP.carFingerprint not in PACIFICA_CARS:
+      return self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN
+
+    speed_scale = clip((v_ego - DELTA_LIMIT_START_SPEED) / (DELTA_LIMIT_END_SPEED - DELTA_LIMIT_START_SPEED), 0., 1.)
+    lower_up = clip(self.cachedParams.get_float('jvePilot.settings.steer.pacificaDeltaUpLow', 1000), 0., self.params.STEER_DELTA_UP)
+    lower_down = clip(self.cachedParams.get_float('jvePilot.settings.steer.pacificaDeltaDownLow', 1000), 0., self.params.STEER_DELTA_DOWN)
+    steer_delta_up = self.params.STEER_DELTA_UP + (lower_up - self.params.STEER_DELTA_UP) * speed_scale
+    steer_delta_down = self.params.STEER_DELTA_DOWN + (lower_down - self.params.STEER_DELTA_DOWN) * speed_scale
+    return steer_delta_up, steer_delta_down
 
   def brake_hold(self, CS, CC, can_sends):
     counter_das_3_changed = CS.das_3['COUNTER'] != self.last_das_3_counter

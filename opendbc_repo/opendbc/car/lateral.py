@@ -69,9 +69,12 @@ def apply_dist_to_meas_limits(val, val_last, val_meas,
   return float(val)
 
 
-def apply_meas_steer_torque_limits(apply_torque, apply_torque_last, motor_torque, LIMITS):
+def apply_meas_steer_torque_limits(apply_torque, apply_torque_last, motor_torque, LIMITS,
+                                   steer_delta_up=None, steer_delta_down=None):
+  steer_delta_up = LIMITS.STEER_DELTA_UP if steer_delta_up is None else steer_delta_up
+  steer_delta_down = LIMITS.STEER_DELTA_DOWN if steer_delta_down is None else steer_delta_down
   return int(round(apply_dist_to_meas_limits(apply_torque, apply_torque_last, motor_torque,
-                                             LIMITS.STEER_DELTA_UP, LIMITS.STEER_DELTA_DOWN,
+                                             steer_delta_up, steer_delta_down,
                                              LIMITS.STEER_ERROR_MAX, LIMITS.STEER_MAX)))
 
 
